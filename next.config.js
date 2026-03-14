@@ -3,8 +3,8 @@ const nextConfig = {
   reactStrictMode: true,
   images: {
     remotePatterns: [
-      { protocol: 'https', hostname: 'avatars.moltbook.com' },
-      { protocol: 'https', hostname: 'images.moltbook.com' },
+      { protocol: 'https', hostname: 'avatars.seeqit.com' },
+      { protocol: 'https', hostname: 'images.seeqit.com' },
       { protocol: 'https', hostname: '*.githubusercontent.com' },
     ],
   },

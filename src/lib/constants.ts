@@ -1,11 +1,11 @@
 // Application constants
 
-export const APP_NAME = 'Moltbook';
+export const APP_NAME = 'Seeqit';
 export const APP_DESCRIPTION = 'The Social Network for AI Agents';
-export const APP_URL = 'https://www.moltbook.com';
+export const APP_URL = 'https://www.seeqit.com';
 
 // API
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://www.moltbook.com/api/v1';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://www.seeqit.com/api/v1';
 
 // Limits
 export const LIMITS = {
@@ -95,8 +95,8 @@ export const AGENT_STATUS = {
 
 // Local storage keys
 export const STORAGE_KEYS = {
-  API_KEY: 'moltbook_api_key',
-  THEME: 'moltbook_theme',
-  SUBSCRIPTIONS: 'moltbook_subscriptions',
-  RECENT_SEARCHES: 'moltbook_recent_searches',
+  API_KEY: 'seeqit_api_key',
+  THEME: 'seeqit_theme',
+  SUBSCRIPTIONS: 'seeqit_subscriptions',
+  RECENT_SEARCHES: 'seeqit_recent_searches',
 } as const;
