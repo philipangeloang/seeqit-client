@@ -6,14 +6,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useUIStore } from '@/store';
-import { useAuth, useSubmolts } from '@/hooks';
+import { useAuth, useSubseeqs } from '@/hooks';
 import { api } from '@/lib/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, Button, Input, Textarea, Card } from '@/components/ui';
 import { FileText, Link as LinkIcon, X, Image, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const postSchema = z.object({
-  submolt: z.string().min(1, 'Please select a community'),
+  subseeq: z.string().min(1, 'Please select a community'),
   title: z.string().min(1, 'Title is required').max(300, 'Title too long'),
   content: z.string().max(40000, 'Content too long').optional(),
   url: z.string().url('Invalid URL').optional().or(z.literal('')),
@@ -26,26 +26,26 @@ type PostForm = z.infer<typeof postSchema>;
 
 export function CreatePostModal() {
   const router = useRouter();
-  const { createPostOpen, createPostSubmolt, closeCreatePost } = useUIStore();
+  const { createPostOpen, createPostSubseeq, closeCreatePost } = useUIStore();
   const { isAuthenticated } = useAuth();
-  const { data: submoltsData } = useSubmolts();
+  const { data: subseeqsData } = useSubseeqs();
   const [postType, setPostType] = React.useState<'text' | 'link'>('text');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [showSubmoltDropdown, setShowSubmoltDropdown] = React.useState(false);
+  const [showSubseeqDropdown, setShowSubseeqDropdown] = React.useState(false);
 
   const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm<PostForm>({
     resolver: zodResolver(postSchema),
-    defaultValues: { submolt: '', title: '', content: '', url: '' },
+    defaultValues: { subseeq: '', title: '', content: '', url: '' },
   });
 
-  // Pre-fill submolt when opened from a submolt page
+  // Pre-fill subseeq when opened from a subseeq page
   React.useEffect(() => {
-    if (createPostOpen && createPostSubmolt) {
-      setValue('submolt', createPostSubmolt);
+    if (createPostOpen && createPostSubseeq) {
+      setValue('subseeq', createPostSubseeq);
     }
-  }, [createPostOpen, createPostSubmolt, setValue]);
+  }, [createPostOpen, createPostSubseeq, setValue]);
 
-  const selectedSubmolt = watch('submolt');
+  const selectedSubseeq = watch('subseeq');
 
   const onSubmit = async (data: PostForm) => {
     if (!isAuthenticated || isSubmitting) return;
@@ -53,7 +53,7 @@ export function CreatePostModal() {
     setIsSubmitting(true);
     try {
       const post = await api.createPost({
-        submolt: data.submolt,
+        subseeq: data.subseeq,
         title: data.title,
         content: postType === 'text' ? data.content : undefined,
         url: postType === 'link' ? data.url : undefined,
@@ -80,38 +80,38 @@ export function CreatePostModal() {
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Submolt selector */}
+          {/* Subseeq selector */}
           <div className="relative">
             <button
               type="button"
-              onClick={() => setShowSubmoltDropdown(!showSubmoltDropdown)}
+              onClick={() => setShowSubseeqDropdown(!showSubseeqDropdown)}
               className="w-full flex items-center justify-between px-3 py-2 border rounded-md hover:bg-muted transition-colors"
             >
-              <span className={selectedSubmolt ? 'text-foreground' : 'text-muted-foreground'}>
-                {selectedSubmolt ? `m/${selectedSubmolt}` : 'Choose a community'}
+              <span className={selectedSubseeq ? 'text-foreground' : 'text-muted-foreground'}>
+                {selectedSubseeq ? `s/${selectedSubseeq}` : 'Choose a community'}
               </span>
               <ChevronDown className="h-4 w-4" />
             </button>
-            
-            {showSubmoltDropdown && (
+
+            {showSubseeqDropdown && (
               <div className="absolute z-10 w-full mt-1 max-h-60 overflow-y-auto rounded-md border bg-popover shadow-lg">
-                {submoltsData?.data.map(submolt => (
+                {subseeqsData?.data.map(subseeq => (
                   <button
-                    key={submolt.id}
+                    key={subseeq.id}
                     type="button"
                     onClick={() => {
-                      setValue('submolt', submolt.name);
-                      setShowSubmoltDropdown(false);
+                      setValue('subseeq', subseeq.name);
+                      setShowSubseeqDropdown(false);
                     }}
                     className="w-full px-3 py-2 text-left hover:bg-muted transition-colors"
                   >
-                    <span className="font-medium">m/{submolt.name}</span>
-                    {submolt.displayName && <span className="text-muted-foreground ml-2">{submolt.displayName}</span>}
+                    <span className="font-medium">s/{subseeq.name}</span>
+                    {subseeq.displayName && <span className="text-muted-foreground ml-2">{subseeq.displayName}</span>}
                   </button>
                 ))}
               </div>
             )}
-            {errors.submolt && <p className="text-xs text-destructive mt-1">{errors.submolt.message}</p>}
+            {errors.subseeq && <p className="text-xs text-destructive mt-1">{errors.subseeq.message}</p>}
           </div>
 
           {/* Post type tabs */}

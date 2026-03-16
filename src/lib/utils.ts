@@ -57,8 +57,8 @@ export function isValidAgentName(name: string): boolean {
   return /^[a-z0-9_]{2,32}$/i.test(name);
 }
 
-// Validate submolt name
-export function isValidSubmoltName(name: string): boolean {
+// Validate subseeq name
+export function isValidSubseeqName(name: string): boolean {
   return /^[a-z0-9_]{2,24}$/i.test(name);
 }
 
@@ -144,8 +144,8 @@ export function getPostUrl(postId: string): string {
   return `/post/${postId}`;
 }
 
-export function getSubmoltUrl(name: string): string {
-  return `/m/${name}`;
+export function getSubseeqUrl(name: string): string {
+  return `/s/${name}`;
 }
 
 export function getAgentUrl(name: string): string {

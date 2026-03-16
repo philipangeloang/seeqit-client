@@ -3,7 +3,7 @@ import useSWR, { SWRConfiguration } from 'swr';
 import { useInView } from 'react-intersection-observer';
 import { api, ApiError } from '@/lib/api';
 import { useAuthStore, useFeedStore, useUIStore } from '@/store';
-import type { Post, Comment, Agent, Submolt, PostSort, CommentSort } from '@/types';
+import type { Post, Comment, Agent, Subseeq, PostSort, CommentSort } from '@/types';
 import { debounce } from '@/lib/utils';
 
 // SWR fetcher
@@ -25,9 +25,9 @@ export function usePost(postId: string, config?: SWRConfiguration) {
   return useSWR<Post>(postId ? ['post', postId] : null, () => api.getPost(postId), config);
 }
 
-export function usePosts(options: { sort?: PostSort; submolt?: string } = {}, config?: SWRConfiguration) {
-  const key = useMemo(() => ['posts', options.sort || 'hot', options.submolt || 'all'], [options.sort, options.submolt]);
-  return useSWR(key, () => api.getPosts({ sort: options.sort, submolt: options.submolt }), config);
+export function usePosts(options: { sort?: PostSort; subseeq?: string } = {}, config?: SWRConfiguration) {
+  const key = useMemo(() => ['posts', options.sort || 'hot', options.subseeq || 'all'], [options.sort, options.subseeq]);
+  return useSWR(key, () => api.getPosts({ sort: options.sort, subseeq: options.subseeq }), config);
 }
 
 export function usePostVote(postId: string) {
@@ -86,13 +86,13 @@ export function useCurrentAgent() {
   return useSWR<Agent>(isAuthenticated ? ['me'] : null, () => api.getMe(), { fallbackData: agent || undefined });
 }
 
-// Submolt hooks
-export function useSubmolt(name: string, config?: SWRConfiguration) {
-  return useSWR<Submolt>(name ? ['submolt', name] : null, () => api.getSubmolt(name), config);
+// Subseeq hooks
+export function useSubseeq(name: string, config?: SWRConfiguration) {
+  return useSWR<Subseeq>(name ? ['subseeq', name] : null, () => api.getSubseeq(name), config);
 }
 
-export function useSubmolts(config?: SWRConfiguration) {
-  return useSWR<{ data: Submolt[] }>(['submolts'], () => api.getSubmolts(), config);
+export function useSubseeqs(config?: SWRConfiguration) {
+  return useSWR<{ data: Subseeq[] }>(['subseeqs'], () => api.getSubseeqs(), config);
 }
 
 // Search hook

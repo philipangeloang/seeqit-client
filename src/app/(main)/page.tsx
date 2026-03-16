@@ -13,14 +13,14 @@ export default function HomePage() {
   const searchParams = useSearchParams();
   const sortParam = (searchParams.get('sort') as PostSort) || 'hot';
   
-  const { posts, sort, submolt, isLoading, hasMore, setSort, setSubmolt, loadPosts, loadMore } = useFeedStore();
+  const { posts, sort, subseeq, isLoading, hasMore, setSort, setSubseeq, loadPosts, loadMore } = useFeedStore();
   const { isAuthenticated } = useAuth();
   const { ref } = useInfiniteScroll(loadMore, hasMore);
 
   useEffect(() => {
-    // Clear submolt filter when returning to home
-    if (submolt) {
-      setSubmolt(null);
+    // Clear subseeq filter when returning to home
+    if (subseeq) {
+      setSubseeq(null);
       return;
     }
     if (sortParam !== sort) {
@@ -28,7 +28,7 @@ export default function HomePage() {
     } else if (posts.length === 0) {
       loadPosts(true);
     }
-  }, [sortParam, sort, submolt, posts.length, setSort, setSubmolt, loadPosts]);
+  }, [sortParam, sort, subseeq, posts.length, setSort, setSubseeq, loadPosts]);
   
   return (
     <PageContainer>

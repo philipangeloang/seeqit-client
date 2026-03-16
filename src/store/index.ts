@@ -68,14 +68,14 @@ interface FeedStore {
   posts: Post[];
   sort: PostSort;
   timeRange: TimeRange;
-  submolt: string | null;
+  subseeq: string | null;
   isLoading: boolean;
   hasMore: boolean;
   offset: number;
-  
+
   setSort: (sort: PostSort) => void;
   setTimeRange: (timeRange: TimeRange) => void;
-  setSubmolt: (submolt: string | null) => void;
+  setSubseeq: (subseeq: string | null) => void;
   loadPosts: (reset?: boolean) => Promise<void>;
   loadMore: () => Promise<void>;
   updatePostVote: (postId: string, vote: 'up' | 'down' | null, scoreDiff: number) => void;
@@ -85,35 +85,35 @@ export const useFeedStore = create<FeedStore>((set, get) => ({
   posts: [],
   sort: 'hot',
   timeRange: 'day',
-  submolt: null,
+  subseeq: null,
   isLoading: false,
   hasMore: true,
   offset: 0,
-  
+
   setSort: (sort) => {
     set({ sort, posts: [], offset: 0, hasMore: true });
     get().loadPosts(true);
   },
-  
+
   setTimeRange: (timeRange) => {
     set({ timeRange, posts: [], offset: 0, hasMore: true });
     get().loadPosts(true);
   },
-  
-  setSubmolt: (submolt) => {
-    set({ submolt, posts: [], offset: 0, hasMore: true });
+
+  setSubseeq: (subseeq) => {
+    set({ subseeq, posts: [], offset: 0, hasMore: true });
     get().loadPosts(true);
   },
-  
+
   loadPosts: async (reset = false) => {
-    const { sort, timeRange, submolt, isLoading } = get();
+    const { sort, timeRange, subseeq, isLoading } = get();
     if (isLoading) return;
-    
+
     set({ isLoading: true });
     try {
       const offset = reset ? 0 : get().offset;
-      const response = submolt 
-        ? await api.getSubmoltFeed(submolt, { sort, limit: 25, offset })
+      const response = subseeq
+        ? await api.getSubseeqFeed(subseeq, { sort, limit: 25, offset })
         : await api.getPosts({ sort, timeRange, limit: 25, offset });
       
       set({
@@ -148,12 +148,12 @@ interface UIStore {
   sidebarOpen: boolean;
   mobileMenuOpen: boolean;
   createPostOpen: boolean;
-  createPostSubmolt: string | null;
+  createPostSubseeq: string | null;
   searchOpen: boolean;
 
   toggleSidebar: () => void;
   toggleMobileMenu: () => void;
-  openCreatePost: (submolt?: string) => void;
+  openCreatePost: (subseeq?: string) => void;
   closeCreatePost: () => void;
   openSearch: () => void;
   closeSearch: () => void;
@@ -163,13 +163,13 @@ export const useUIStore = create<UIStore>((set) => ({
   sidebarOpen: true,
   mobileMenuOpen: false,
   createPostOpen: false,
-  createPostSubmolt: null,
+  createPostSubseeq: null,
   searchOpen: false,
 
   toggleSidebar: () => set(s => ({ sidebarOpen: !s.sidebarOpen })),
   toggleMobileMenu: () => set(s => ({ mobileMenuOpen: !s.mobileMenuOpen })),
-  openCreatePost: (submolt?) => set({ createPostOpen: true, createPostSubmolt: submolt || null }),
-  closeCreatePost: () => set({ createPostOpen: false, createPostSubmolt: null }),
+  openCreatePost: (subseeq?) => set({ createPostOpen: true, createPostSubseeq: subseeq || null }),
+  closeCreatePost: () => set({ createPostOpen: false, createPostSubseeq: null }),
   openSearch: () => set({ searchOpen: true }),
   closeSearch: () => set({ searchOpen: false }),
 }));
@@ -216,7 +216,7 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
 
 // Subscriptions Store
 interface SubscriptionStore {
-  subscribedSubmolts: string[];
+  subscribedSubseeqs: string[];
   addSubscription: (name: string) => void;
   removeSubscription: (name: string) => void;
   isSubscribed: (name: string) => boolean;
@@ -225,19 +225,19 @@ interface SubscriptionStore {
 export const useSubscriptionStore = create<SubscriptionStore>()(
   persist(
     (set, get) => ({
-      subscribedSubmolts: [],
-      
+      subscribedSubseeqs: [],
+
       addSubscription: (name) => {
-        if (!get().subscribedSubmolts.includes(name)) {
-          set({ subscribedSubmolts: [...get().subscribedSubmolts, name] });
+        if (!get().subscribedSubseeqs.includes(name)) {
+          set({ subscribedSubseeqs: [...get().subscribedSubseeqs, name] });
         }
       },
-      
+
       removeSubscription: (name) => {
-        set({ subscribedSubmolts: get().subscribedSubmolts.filter(s => s !== name) });
+        set({ subscribedSubseeqs: get().subscribedSubseeqs.filter(s => s !== name) });
       },
-      
-      isSubscribed: (name) => get().subscribedSubmolts.includes(name),
+
+      isSubscribed: (name) => get().subscribedSubseeqs.includes(name),
     }),
     { name: 'seeqit-subscriptions' }
   )

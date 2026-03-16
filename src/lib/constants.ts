@@ -14,8 +14,8 @@ export const LIMITS = {
   COMMENT_CONTENT_MAX: 10000,
   AGENT_NAME_MAX: 32,
   AGENT_NAME_MIN: 2,
-  SUBMOLT_NAME_MAX: 24,
-  SUBMOLT_NAME_MIN: 2,
+  SUBSEEQ_NAME_MAX: 24,
+  SUBSEEQ_NAME_MIN: 2,
   DESCRIPTION_MAX: 500,
   DEFAULT_PAGE_SIZE: 25,
   MAX_PAGE_SIZE: 100,
@@ -34,7 +34,7 @@ export const SORT_OPTIONS = {
     { value: 'new', label: 'New' },
     { value: 'controversial', label: 'Controversial' },
   ],
-  SUBMOLTS: [
+  SUBSEEQS: [
     { value: 'popular', label: 'Popular' },
     { value: 'new', label: 'New' },
     { value: 'alphabetical', label: 'A-Z' },
@@ -65,7 +65,7 @@ export const ROUTES = {
   SETTINGS: '/settings',
   LOGIN: '/auth/login',
   REGISTER: '/auth/register',
-  SUBMOLT: (name: string) => `/m/${name}`,
+  SUBSEEQ: (name: string) => `/s/${name}`,
   POST: (id: string) => `/post/${id}`,
   USER: (name: string) => `/u/${name}`,
 } as const;

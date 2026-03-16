@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useSearchParams, notFound } from 'next/navigation';
 import Link from 'next/link';
-import { useSubmolt, useAuth, useInfiniteScroll } from '@/hooks';
+import { useSubseeq, useAuth, useInfiniteScroll } from '@/hooks';
 import { useFeedStore, useSubscriptionStore, useUIStore } from '@/store';
 import { PageContainer } from '@/components/layout';
 import { PostList, FeedSortTabs, CreatePostCard } from '@/components/post';
@@ -13,34 +13,34 @@ import { cn, formatDate, formatScore, getInitials } from '@/lib/utils';
 import { api } from '@/lib/api';
 import type { PostSort } from '@/types';
 
-export default function SubmoltPage() {
+export default function SubseeqPage() {
   const params = useParams<{ name: string }>();
   const searchParams = useSearchParams();
   const sortParam = (searchParams.get('sort') as PostSort) || 'hot';
   
-  const { data: submolt, isLoading: submoltLoading, error } = useSubmolt(params.name);
+  const { data: subseeq, isLoading: subseeqLoading, error } = useSubseeq(params.name);
   const { isAuthenticated } = useAuth();
   const { isSubscribed, addSubscription, removeSubscription } = useSubscriptionStore();
-  const { posts, sort, isLoading, hasMore, setSort, setSubmolt, loadMore } = useFeedStore();
+  const { posts, sort, isLoading, hasMore, setSort, setSubseeq, loadMore } = useFeedStore();
   const { ref } = useInfiniteScroll(loadMore, hasMore);
   
   const [subscribing, setSubscribing] = useState(false);
-  const subscribed = submolt?.isSubscribed || isSubscribed(params.name);
-  
+  const subscribed = subseeq?.isSubscribed || isSubscribed(params.name);
+
   useEffect(() => {
-    setSubmolt(params.name);
+    setSubseeq(params.name);
     if (sortParam !== sort) setSort(sortParam);
-  }, [params.name, sortParam, sort, setSubmolt, setSort]);
+  }, [params.name, sortParam, sort, setSubseeq, setSort]);
   
   const handleSubscribe = async () => {
     if (!isAuthenticated || subscribing) return;
     setSubscribing(true);
     try {
       if (subscribed) {
-        await api.unsubscribeSubmolt(params.name);
+        await api.unsubscribeSubseeq(params.name);
         removeSubscription(params.name);
       } else {
-        await api.subscribeSubmolt(params.name);
+        await api.subscribeSubseeq(params.name);
         addSubscription(params.name);
       }
     } catch (err) {
@@ -61,24 +61,24 @@ export default function SubmoltPage() {
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Main content */}
           <div className="flex-1 space-y-4">
-            {/* Submolt header */}
+            {/* Subseeq header */}
             <Card className="p-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-4">
                   <Avatar className="h-16 w-16 border-4 border-background -mt-12">
-                    <AvatarImage src={submolt?.iconUrl} />
-                    <AvatarFallback className="text-xl">{submolt?.name ? getInitials(submolt.name) : 'M'}</AvatarFallback>
+                    <AvatarImage src={subseeq?.iconUrl} />
+                    <AvatarFallback className="text-xl">{subseeq?.name ? getInitials(subseeq.name) : 'M'}</AvatarFallback>
                   </Avatar>
                   <div>
-                    {submoltLoading ? (
+                    {subseeqLoading ? (
                       <>
                         <Skeleton className="h-7 w-32 mb-1" />
                         <Skeleton className="h-4 w-20" />
                       </>
                     ) : (
                       <>
-                        <h1 className="text-2xl font-bold">{submolt?.displayName || submolt?.name}</h1>
-                        <p className="text-muted-foreground">m/{submolt?.name}</p>
+                        <h1 className="text-2xl font-bold">{subseeq?.displayName || subseeq?.name}</h1>
+                        <p className="text-muted-foreground">s/{subseeq?.name}</p>
                       </>
                     )}
                   </div>
@@ -91,13 +91,13 @@ export default function SubmoltPage() {
                 )}
               </div>
               
-              {submolt?.description && (
-                <p className="mt-4 text-sm text-muted-foreground">{submolt.description}</p>
+              {subseeq?.description && (
+                <p className="mt-4 text-sm text-muted-foreground">{subseeq.description}</p>
               )}
             </Card>
             
             {/* Create post */}
-            {isAuthenticated && <CreatePostCard submolt={params.name} />}
+            {isAuthenticated && <CreatePostCard subseeq={params.name} />}
             
             {/* Sort tabs */}
             <Card className="p-3">
@@ -105,7 +105,7 @@ export default function SubmoltPage() {
             </Card>
             
             {/* Posts */}
-            <PostList posts={posts} isLoading={isLoading && posts.length === 0} showSubmolt={false} />
+            <PostList posts={posts} isLoading={isLoading && posts.length === 0} showSubseeq={false} />
             
             {/* Load more */}
             {hasMore && (
@@ -122,26 +122,26 @@ export default function SubmoltPage() {
                 <CardTitle className="text-base">About Community</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {submoltLoading ? (
+                {subseeqLoading ? (
                   <>
                     <Skeleton className="h-4 w-full" />
                     <Skeleton className="h-4 w-2/3" />
                   </>
                 ) : (
                   <>
-                    <p className="text-sm">{submolt?.description || 'Welcome to this community!'}</p>
-                    
+                    <p className="text-sm">{subseeq?.description || 'Welcome to this community!'}</p>
+
                     <div className="flex items-center gap-4 text-sm">
                       <div className="flex items-center gap-1">
                         <Users className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">{formatScore(submolt?.subscriberCount || 0)}</span>
+                        <span className="font-medium">{formatScore(subseeq?.subscriberCount || 0)}</span>
                         <span className="text-muted-foreground">members</span>
                       </div>
                     </div>
                     
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Calendar className="h-3.5 w-3.5" />
-                      Created {submolt?.createdAt ? formatDate(submolt.createdAt) : 'recently'}
+                      Created {subseeq?.createdAt ? formatDate(subseeq.createdAt) : 'recently'}
                     </div>
                     
                     {isAuthenticated && (
@@ -156,14 +156,14 @@ export default function SubmoltPage() {
             </Card>
             
             {/* Rules */}
-            {submolt?.rules && submolt.rules.length > 0 && (
+            {subseeq?.rules && subseeq.rules.length > 0 && (
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base">Rules</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ol className="space-y-2">
-                    {submolt.rules.map((rule, i) => (
+                    {subseeq.rules.map((rule, i) => (
                       <li key={rule.id} className="text-sm">
                         <span className="font-medium">{i + 1}. {rule.title}</span>
                         {rule.description && (
@@ -177,14 +177,14 @@ export default function SubmoltPage() {
             )}
             
             {/* Moderators */}
-            {submolt?.moderators && submolt.moderators.length > 0 && (
+            {subseeq?.moderators && subseeq.moderators.length > 0 && (
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base">Moderators</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    {submolt.moderators.map(mod => (
+                    {subseeq.moderators.map(mod => (
                       <Link key={mod.id} href={`/u/${mod.name}`} className="flex items-center gap-2 text-sm hover:bg-muted p-1 rounded">
                         <Avatar className="h-6 w-6">
                           <AvatarImage src={mod.avatarUrl} />

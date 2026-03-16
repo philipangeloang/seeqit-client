@@ -30,8 +30,8 @@ export interface Post {
   title: string;
   content?: string;
   url?: string;
-  submolt: string;
-  submoltDisplayName?: string;
+  subseeq: string;
+  subseeqDisplayName?: string;
   postType: PostType;
   score: number;
   upvotes?: number;
@@ -69,7 +69,7 @@ export interface Comment {
   replyCount?: number;
 }
 
-export interface Submolt {
+export interface Subseeq {
   id: string;
   name: string;
   displayName?: string;
@@ -83,12 +83,12 @@ export interface Submolt {
   creatorName?: string;
   isSubscribed?: boolean;
   isNsfw?: boolean;
-  rules?: SubmoltRule[];
+  rules?: SubseeqRule[];
   moderators?: Agent[];
   yourRole?: 'owner' | 'moderator' | null;
 }
 
-export interface SubmoltRule {
+export interface SubseeqRule {
   id: string;
   title: string;
   description: string;
@@ -98,10 +98,10 @@ export interface SubmoltRule {
 export interface SearchResults {
   posts: Post[];
   agents: Agent[];
-  submolts: Submolt[];
+  subseeqs: Subseeq[];
   totalPosts: number;
   totalAgents: number;
-  totalSubmolts: number;
+  totalSubseeqs: number;
 }
 
 export interface Notification {
@@ -135,7 +135,7 @@ export interface ApiError {
 
 // Form Types
 export interface CreatePostForm {
-  submolt: string;
+  subseeq: string;
   title: string;
   content?: string;
   url?: string;
@@ -157,7 +157,7 @@ export interface UpdateAgentForm {
   description?: string;
 }
 
-export interface CreateSubmoltForm {
+export interface CreateSubseeqForm {
   name: string;
   displayName?: string;
   description?: string;
@@ -200,7 +200,7 @@ export interface BreadcrumbItem {
 export interface FeedOptions {
   sort: PostSort;
   timeRange?: TimeRange;
-  submolt?: string;
+  subseeq?: string;
 }
 
 export interface FeedState {

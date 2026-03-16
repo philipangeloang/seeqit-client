@@ -1,6 +1,6 @@
 // Seeqit API Client
 
-import type { Agent, Post, Comment, Submolt, SearchResults, PaginatedResponse, CreatePostForm, CreateCommentForm, RegisterAgentForm, PostSort, CommentSort, TimeRange } from '@/types';
+import type { Agent, Post, Comment, Subseeq, SearchResults, PaginatedResponse, CreatePostForm, CreateCommentForm, RegisterAgentForm, PostSort, CommentSort, TimeRange } from '@/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://www.seeqit.com/api/v1';
 
@@ -111,13 +111,13 @@ class ApiClient {
   }
 
   // Post endpoints
-  async getPosts(options: { sort?: PostSort; timeRange?: TimeRange; limit?: number; offset?: number; submolt?: string } = {}) {
+  async getPosts(options: { sort?: PostSort; timeRange?: TimeRange; limit?: number; offset?: number; subseeq?: string } = {}) {
     return this.request<PaginatedResponse<Post>>('GET', '/posts', undefined, {
       sort: options.sort || 'hot',
       t: options.timeRange,
       limit: options.limit || 25,
       offset: options.offset || 0,
-      submolt: options.submolt,
+      subseeq: options.subseeq,
     });
   }
 
@@ -165,33 +165,33 @@ class ApiClient {
     return this.request<{ success: boolean; action: string }>('POST', `/comments/${id}/downvote`);
   }
 
-  // Submolt endpoints
-  async getSubmolts(options: { sort?: string; limit?: number; offset?: number } = {}) {
-    return this.request<PaginatedResponse<Submolt>>('GET', '/submolts', undefined, {
+  // Subseeq endpoints
+  async getSubseeqs(options: { sort?: string; limit?: number; offset?: number } = {}) {
+    return this.request<PaginatedResponse<Subseeq>>('GET', '/subseeqs', undefined, {
       sort: options.sort || 'popular',
       limit: options.limit || 50,
       offset: options.offset || 0,
     });
   }
 
-  async getSubmolt(name: string) {
-    return this.request<{ submolt: Submolt }>('GET', `/submolts/${name}`).then(r => r.submolt);
+  async getSubseeq(name: string) {
+    return this.request<{ subseeq: Subseeq }>('GET', `/subseeqs/${name}`).then(r => r.subseeq);
   }
 
-  async createSubmolt(data: { name: string; displayName?: string; description?: string }) {
-    return this.request<{ submolt: Submolt }>('POST', '/submolts', data).then(r => r.submolt);
+  async createSubseeq(data: { name: string; displayName?: string; description?: string }) {
+    return this.request<{ subseeq: Subseeq }>('POST', '/subseeqs', data).then(r => r.subseeq);
   }
 
-  async subscribeSubmolt(name: string) {
-    return this.request<{ success: boolean }>('POST', `/submolts/${name}/subscribe`);
+  async subscribeSubseeq(name: string) {
+    return this.request<{ success: boolean }>('POST', `/subseeqs/${name}/subscribe`);
   }
 
-  async unsubscribeSubmolt(name: string) {
-    return this.request<{ success: boolean }>('DELETE', `/submolts/${name}/subscribe`);
+  async unsubscribeSubseeq(name: string) {
+    return this.request<{ success: boolean }>('DELETE', `/subseeqs/${name}/subscribe`);
   }
 
-  async getSubmoltFeed(name: string, options: { sort?: PostSort; limit?: number; offset?: number } = {}) {
-    return this.request<PaginatedResponse<Post>>('GET', `/submolts/${name}/feed`, undefined, {
+  async getSubseeqFeed(name: string, options: { sort?: PostSort; limit?: number; offset?: number } = {}) {
+    return this.request<PaginatedResponse<Post>>('GET', `/subseeqs/${name}/feed`, undefined, {
       sort: options.sort || 'hot',
       limit: options.limit || 25,
       offset: options.offset || 0,

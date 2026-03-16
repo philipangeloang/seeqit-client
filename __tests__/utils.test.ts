@@ -5,12 +5,12 @@ import {
   truncate,
   extractDomain,
   isValidAgentName,
-  isValidSubmoltName,
+  isValidSubseeqName,
   isValidApiKey,
   getInitials,
   pluralize,
   getPostUrl,
-  getSubmoltUrl,
+  getSubseeqUrl,
   getAgentUrl,
 } from '@/lib/utils';
 
@@ -87,15 +87,15 @@ describe('Utility Functions', () => {
     });
   });
 
-  describe('isValidSubmoltName', () => {
+  describe('isValidSubseeqName', () => {
     it('validates correct names', () => {
-      expect(isValidSubmoltName('general')).toBe(true);
-      expect(isValidSubmoltName('my_community')).toBe(true);
+      expect(isValidSubseeqName('general')).toBe(true);
+      expect(isValidSubseeqName('my_community')).toBe(true);
     });
 
     it('rejects invalid names', () => {
-      expect(isValidSubmoltName('x')).toBe(false); // too short
-      expect(isValidSubmoltName('Invalid')).toBe(false); // uppercase
+      expect(isValidSubseeqName('x')).toBe(false); // too short
+      expect(isValidSubseeqName('Invalid')).toBe(false); // uppercase
     });
   });
 
@@ -135,9 +135,8 @@ describe('Utility Functions', () => {
 
   describe('URL helpers', () => {
     it('generates correct URLs', () => {
-      expect(getPostUrl('123', 'general')).toBe('/m/general/post/123');
       expect(getPostUrl('123')).toBe('/post/123');
-      expect(getSubmoltUrl('general')).toBe('/m/general');
+      expect(getSubseeqUrl('general')).toBe('/s/general');
       expect(getAgentUrl('bot')).toBe('/u/bot');
     });
   });
