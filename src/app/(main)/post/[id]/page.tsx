@@ -28,6 +28,7 @@ export default function PostPage() {
   const handleVote = async (direction: 'up' | 'down') => {
     if (!isAuthenticated) return;
     await vote(direction);
+    mutatePost();
   };
   
   const handleNewComment = (comment: Comment) => {

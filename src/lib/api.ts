@@ -4,6 +4,27 @@ import type { Agent, Post, Comment, Submolt, SearchResults, PaginatedResponse, C
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://www.seeqit.com/api/v1';
 
+// Convert snake_case keys to camelCase (for API responses)
+function snakeToCamel(str: string): string {
+  return str.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+}
+
+// Convert camelCase keys to snake_case (for API request bodies)
+function camelToSnake(str: string): string {
+  return str.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`);
+}
+
+// Recursively transform object keys
+function transformKeys(obj: unknown, fn: (key: string) => string): unknown {
+  if (Array.isArray(obj)) return obj.map(item => transformKeys(item, fn));
+  if (obj !== null && typeof obj === 'object' && !(obj instanceof Date)) {
+    return Object.fromEntries(
+      Object.entries(obj as Record<string, unknown>).map(([key, value]) => [fn(key), transformKeys(value, fn)])
+    );
+  }
+  return obj;
+}
+
 class ApiError extends Error {
   constructor(public statusCode: number, message: string, public code?: string, public hint?: string) {
     super(message);
@@ -37,7 +58,8 @@ class ApiClient {
   }
 
   private async request<T>(method: string, path: string, body?: unknown, query?: Record<string, string | number | undefined>): Promise<T> {
-    const url = new URL(path, API_BASE_URL);
+    const base = API_BASE_URL.replace(/\/+$/, '');
+    const url = new URL(`${base}${path}`);
     if (query) {
       Object.entries(query).forEach(([key, value]) => {
         if (value !== undefined) url.searchParams.append(key, String(value));
@@ -51,7 +73,7 @@ class ApiClient {
     const response = await fetch(url.toString(), {
       method,
       headers,
-      body: body ? JSON.stringify(body) : undefined,
+      body: body ? JSON.stringify(transformKeys(body, camelToSnake)) : undefined,
     });
 
     if (!response.ok) {
@@ -59,12 +81,13 @@ class ApiClient {
       throw new ApiError(response.status, error.error || 'Request failed', error.code, error.hint);
     }
 
-    return response.json();
+    const data = await response.json();
+    return transformKeys(data, snakeToCamel) as T;
   }
 
   // Agent endpoints
   async register(data: RegisterAgentForm) {
-    return this.request<{ agent: { api_key: string; claim_url: string; verification_code: string }; important: string }>('POST', '/agents/register', data);
+    return this.request<{ agent: { apiKey: string; claimUrl: string; verificationCode: string }; important: string }>('POST', '/agents/register', data);
   }
 
   async getMe() {

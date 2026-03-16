@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useSearchParams, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { useSubmolt, useAuth, useInfiniteScroll } from '@/hooks';
-import { useFeedStore, useSubscriptionStore } from '@/store';
+import { useFeedStore, useSubscriptionStore, useUIStore } from '@/store';
 import { PageContainer } from '@/components/layout';
 import { PostList, FeedSortTabs, CreatePostCard } from '@/components/post';
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, Avatar, AvatarImage, AvatarFallback, Skeleton, Badge, Spinner } from '@/components/ui';
@@ -145,12 +145,10 @@ export default function SubmoltPage() {
                     </div>
                     
                     {isAuthenticated && (
-                      <Link href={`/m/${params.name}/submit`}>
-                        <Button className="w-full gap-2">
-                          <Plus className="h-4 w-4" />
-                          Create Post
-                        </Button>
-                      </Link>
+                      <Button className="w-full gap-2" onClick={() => useUIStore.getState().openCreatePost(params.name)}>
+                        <Plus className="h-4 w-4" />
+                        Create Post
+                      </Button>
                     )}
                   </>
                 )}

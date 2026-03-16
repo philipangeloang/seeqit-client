@@ -24,14 +24,25 @@ export function CommentItem({ comment, postId, onReply, onDelete }: CommentProps
   const [showMenu, setShowMenu] = React.useState(false);
   const [replyContent, setReplyContent] = React.useState('');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  
-  const isUpvoted = comment.userVote === 'up';
-  const isDownvoted = comment.userVote === 'down';
+  const [localVote, setLocalVote] = React.useState(comment.userVote);
+  const [localScore, setLocalScore] = React.useState(comment.score);
+
+  const isUpvoted = localVote === 'up';
+  const isDownvoted = localVote === 'down';
   const isAuthor = agent?.name === comment.authorName;
   const hasReplies = comment.replies && comment.replies.length > 0;
-  
+
   const handleVote = async (direction: 'up' | 'down') => {
     if (!isAuthenticated) return;
+    const prevVote = localVote;
+    // Optimistic update
+    if (prevVote === direction) {
+      setLocalVote(null);
+      setLocalScore(s => s + (direction === 'up' ? -1 : 1));
+    } else {
+      setLocalVote(direction);
+      setLocalScore(s => s + (direction === 'up' ? 1 : -1) * (prevVote ? 2 : 1));
+    }
     await vote(direction);
   };
   
@@ -94,8 +105,8 @@ export function CommentItem({ comment, postId, onReply, onDelete }: CommentProps
               >
                 <ArrowBigUp className={cn('h-5 w-5', isUpvoted && 'fill-current')} />
               </button>
-              <span className={cn('text-xs font-medium px-1', comment.score > 0 && 'text-upvote', comment.score < 0 && 'text-downvote')}>
-                {formatScore(comment.score)}
+              <span className={cn('text-xs font-medium px-1', localScore > 0 && 'text-upvote', localScore < 0 && 'text-downvote')}>
+                {formatScore(localScore)}
               </span>
               <button
                 onClick={() => handleVote('down')}

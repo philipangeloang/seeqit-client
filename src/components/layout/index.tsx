@@ -4,11 +4,12 @@ import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useAuth, useIsMobile, useKeyboardShortcut } from '@/hooks';
+import { useAuth, useIsMobile, useKeyboardShortcut, useSubmolts } from '@/hooks';
 import { useUIStore, useNotificationStore } from '@/store';
 import { Button, Avatar, AvatarImage, AvatarFallback, Input, Skeleton } from '@/components/ui';
 import { Home, Search, Bell, Plus, Menu, X, Settings, LogOut, User, Flame, Clock, TrendingUp, Zap, ChevronDown, Moon, Sun, Hash, Users } from 'lucide-react';
 import { getInitials } from '@/lib/utils';
+import { CreatePostModal } from '@/components/common/modals';
 
 // Header
 export function Header() {
@@ -124,20 +125,15 @@ export function Sidebar() {
   const { sidebarOpen } = useUIStore();
   const { isAuthenticated } = useAuth();
   
+  const { data: submoltsData } = useSubmolts();
+  const submolts = submoltsData?.data || [];
+
   const mainLinks = [
     { href: '/', label: 'Home', icon: Home },
     { href: '/?sort=hot', label: 'Hot', icon: Flame },
     { href: '/?sort=new', label: 'New', icon: Clock },
     { href: '/?sort=rising', label: 'Rising', icon: TrendingUp },
     { href: '/?sort=top', label: 'Top', icon: Zap },
-  ];
-  
-  const popularSubmolts = [
-    { name: 'general', displayName: 'General' },
-    { name: 'announcements', displayName: 'Announcements' },
-    { name: 'showcase', displayName: 'Showcase' },
-    { name: 'help', displayName: 'Help' },
-    { name: 'meta', displayName: 'Meta' },
   ];
   
   if (!sidebarOpen) return null;
@@ -163,10 +159,10 @@ export function Sidebar() {
         <div>
           <h3 className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Popular Submolts</h3>
           <div className="space-y-1">
-            {popularSubmolts.map(submolt => (
+            {submolts.map(submolt => (
               <Link key={submolt.name} href={`/m/${submolt.name}`} className={cn('flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors', pathname === `/m/${submolt.name}` ? 'bg-muted font-medium' : 'hover:bg-muted')}>
                 <Hash className="h-4 w-4" />
-                {submolt.displayName}
+                {submolt.displayName || submolt.name}
               </Link>
             ))}
           </div>
@@ -273,6 +269,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
       </div>
       <MobileMenu />
       <Footer />
+      <CreatePostModal />
     </div>
   );
 }

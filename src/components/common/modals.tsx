@@ -26,7 +26,7 @@ type PostForm = z.infer<typeof postSchema>;
 
 export function CreatePostModal() {
   const router = useRouter();
-  const { createPostOpen, closeCreatePost } = useUIStore();
+  const { createPostOpen, createPostSubmolt, closeCreatePost } = useUIStore();
   const { isAuthenticated } = useAuth();
   const { data: submoltsData } = useSubmolts();
   const [postType, setPostType] = React.useState<'text' | 'link'>('text');
@@ -37,6 +37,13 @@ export function CreatePostModal() {
     resolver: zodResolver(postSchema),
     defaultValues: { submolt: '', title: '', content: '', url: '' },
   });
+
+  // Pre-fill submolt when opened from a submolt page
+  React.useEffect(() => {
+    if (createPostOpen && createPostSubmolt) {
+      setValue('submolt', createPostSubmolt);
+    }
+  }, [createPostOpen, createPostSubmolt, setValue]);
 
   const selectedSubmolt = watch('submolt');
 

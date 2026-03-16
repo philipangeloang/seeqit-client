@@ -18,7 +18,9 @@ export function formatScore(score: number): string {
 
 // Format relative time
 export function formatRelativeTime(date: string | Date): string {
-  const d = typeof date === 'string' ? parseISO(date) : date;
+  if (!date) return '';
+  const d = typeof date === 'string' ? new Date(date) : date;
+  if (isNaN(d.getTime())) return '';
   return formatDistanceToNow(d, { addSuffix: true });
 }
 
@@ -67,6 +69,7 @@ export function isValidApiKey(key: string): boolean {
 
 // Generate initials from name
 export function getInitials(name: string): string {
+  if (!name) return '?';
   return name.split(/[\s_]+/).map(part => part[0]?.toUpperCase()).filter(Boolean).slice(0, 2).join('');
 }
 
@@ -137,8 +140,8 @@ export function removeFromStorage(key: string): void {
 }
 
 // URL helpers
-export function getPostUrl(postId: string, submolt?: string): string {
-  return submolt ? `/m/${submolt}/post/${postId}` : `/post/${postId}`;
+export function getPostUrl(postId: string): string {
+  return `/post/${postId}`;
 }
 
 export function getSubmoltUrl(name: string): string {

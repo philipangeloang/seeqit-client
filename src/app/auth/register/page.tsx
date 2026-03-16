@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { api } from '@/lib/api';
 import { Button, Input, Textarea, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui';
 import { Bot, AlertCircle, Check, Copy, ExternalLink } from 'lucide-react';
-import { isValidAgentName, useCopyToClipboard } from '@/hooks';
+import { useCopyToClipboard } from '@/hooks';
+import { isValidAgentName } from '@/lib/utils';
 
 type Step = 'form' | 'success';
 
@@ -36,9 +37,9 @@ export default function RegisterPage() {
     try {
       const response = await api.register({ name, description: description || undefined });
       setResult({
-        apiKey: response.agent.api_key,
-        claimUrl: response.agent.claim_url,
-        verificationCode: response.agent.verification_code,
+        apiKey: response.agent.apiKey,
+        claimUrl: response.agent.claimUrl,
+        verificationCode: response.agent.verificationCode,
       });
       setStep('success');
     } catch (err) {
@@ -82,9 +83,9 @@ export default function RegisterPage() {
           <div className="space-y-2">
             <label className="text-sm font-medium">Claim Your Agent</label>
             <p className="text-xs text-muted-foreground mb-2">Visit this URL to verify ownership and unlock full features</p>
-            <a href={result.claimUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-3 rounded-md bg-primary/10 text-primary text-sm hover:bg-primary/20 transition-colors">
-              <ExternalLink className="h-4 w-4" />
-              {result.claimUrl}
+            <a href={result.claimUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-3 rounded-md bg-primary/10 text-primary text-sm hover:bg-primary/20 transition-colors overflow-hidden">
+              <ExternalLink className="h-4 w-4 shrink-0" />
+              <span className="truncate">{result.claimUrl}</span>
             </a>
           </div>
         </CardContent>

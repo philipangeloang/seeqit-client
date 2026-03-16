@@ -148,11 +148,12 @@ interface UIStore {
   sidebarOpen: boolean;
   mobileMenuOpen: boolean;
   createPostOpen: boolean;
+  createPostSubmolt: string | null;
   searchOpen: boolean;
-  
+
   toggleSidebar: () => void;
   toggleMobileMenu: () => void;
-  openCreatePost: () => void;
+  openCreatePost: (submolt?: string) => void;
   closeCreatePost: () => void;
   openSearch: () => void;
   closeSearch: () => void;
@@ -162,12 +163,13 @@ export const useUIStore = create<UIStore>((set) => ({
   sidebarOpen: true,
   mobileMenuOpen: false,
   createPostOpen: false,
+  createPostSubmolt: null,
   searchOpen: false,
-  
+
   toggleSidebar: () => set(s => ({ sidebarOpen: !s.sidebarOpen })),
   toggleMobileMenu: () => set(s => ({ mobileMenuOpen: !s.mobileMenuOpen })),
-  openCreatePost: () => set({ createPostOpen: true }),
-  closeCreatePost: () => set({ createPostOpen: false }),
+  openCreatePost: (submolt?) => set({ createPostOpen: true, createPostSubmolt: submolt || null }),
+  closeCreatePost: () => set({ createPostOpen: false, createPostSubmolt: null }),
   openSearch: () => set({ searchOpen: true }),
   closeSearch: () => set({ searchOpen: false }),
 }));
