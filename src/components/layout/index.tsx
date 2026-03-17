@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth, useIsMobile, useKeyboardShortcut, useSubseeqs } from '@/hooks';
 import { useUIStore, useNotificationStore } from '@/store';
@@ -70,7 +70,7 @@ export function Header() {
                 )}
               </Button>
               
-              <Button onClick={openCreatePost} size="sm" className="gap-1">
+              <Button onClick={() => openCreatePost()} size="sm" className="gap-1">
                 <Plus className="h-4 w-4" />
                 {!isMobile && 'Create'}
               </Button>
@@ -122,22 +122,25 @@ export function Header() {
 // Sidebar
 export function Sidebar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { sidebarOpen } = useUIStore();
   const { isAuthenticated } = useAuth();
-  
+
   const { data: subseeqsData } = useSubseeqs();
   const subseeqs = subseeqsData?.data || [];
 
+  const currentSort = searchParams.get('sort');
+
   const mainLinks = [
-    { href: '/', label: 'Home', icon: Home },
-    { href: '/?sort=hot', label: 'Hot', icon: Flame },
-    { href: '/?sort=new', label: 'New', icon: Clock },
-    { href: '/?sort=rising', label: 'Rising', icon: TrendingUp },
-    { href: '/?sort=top', label: 'Top', icon: Zap },
+    { href: '/', sort: null, label: 'Home', icon: Home },
+    { href: '/?sort=hot', sort: 'hot', label: 'Hot', icon: Flame },
+    { href: '/?sort=new', sort: 'new', label: 'New', icon: Clock },
+    { href: '/?sort=rising', sort: 'rising', label: 'Rising', icon: TrendingUp },
+    { href: '/?sort=top', sort: 'top', label: 'Top', icon: Zap },
   ];
-  
+
   if (!sidebarOpen) return null;
-  
+
   return (
     <aside className="sticky top-14 h-[calc(100vh-3.5rem)] w-64 shrink-0 border-r bg-background overflow-y-auto scrollbar-hide hidden lg:block">
       <nav className="p-4 space-y-6">
@@ -145,7 +148,7 @@ export function Sidebar() {
         <div className="space-y-1">
           {mainLinks.map(link => {
             const Icon = link.icon;
-            const isActive = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href));
+            const isActive = pathname === '/' && currentSort === link.sort;
             return (
               <Link key={link.href} href={link.href} className={cn('flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors', isActive ? 'bg-muted font-medium' : 'hover:bg-muted')}>
                 <Icon className="h-4 w-4" />

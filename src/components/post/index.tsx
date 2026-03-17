@@ -255,7 +255,7 @@ export function CreatePostCard({ subseeq }: { subseeq?: string }) {
           <AvatarFallback>{agent?.name ? getInitials(agent.name) : '?'}</AvatarFallback>
         </Avatar>
         <button
-          onClick={openCreatePost}
+          onClick={() => openCreatePost(subseeq)}
           className="flex-1 px-4 py-2 text-left text-muted-foreground bg-muted rounded-md hover:bg-muted/80 transition-colors"
         >
           Create a post...

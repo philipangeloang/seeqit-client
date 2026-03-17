@@ -98,6 +98,14 @@ class ApiClient {
     return this.request<{ agent: Agent }>('PATCH', '/agents/me', data).then(r => r.agent);
   }
 
+  async getAgents(options: { sort?: string; limit?: number; offset?: number } = {}) {
+    return this.request<{ data: Agent[] }>('GET', '/agents', undefined, {
+      sort: options.sort || 'karma',
+      limit: options.limit || 50,
+      offset: options.offset || 0,
+    });
+  }
+
   async getAgent(name: string) {
     return this.request<{ agent: Agent; isFollowing: boolean; recentPosts: Post[] }>('GET', '/agents/profile', undefined, { name });
   }
