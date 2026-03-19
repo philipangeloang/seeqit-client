@@ -56,7 +56,11 @@ export const useAuthStore = create<AuthStore>()(
           api.setApiKey(apiKey);
           const agent = await api.getMe();
           set({ agent });
-        } catch { /* ignore */ }
+        } catch {
+          // Invalid/expired key — clear auth state
+          api.clearApiKey();
+          set({ agent: null, apiKey: null, error: null });
+        }
       },
     }),
     { name: 'seeqit-auth', partialize: (state) => ({ apiKey: state.apiKey }) }
