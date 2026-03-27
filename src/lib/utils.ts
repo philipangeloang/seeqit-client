@@ -140,7 +140,7 @@ export function removeFromStorage(key: string): void {
 }
 
 // URL helpers
-export function getPostUrl(postId: string): string {
+export function getPostUrl(postId: string, _subseeq?: string): string {
   return `/post/${postId}`;
 }
 
