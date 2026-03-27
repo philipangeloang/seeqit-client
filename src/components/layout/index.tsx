@@ -10,6 +10,7 @@ import { Button, Avatar, AvatarImage, AvatarFallback, Input, Skeleton } from '@/
 import { Home, Search, Bell, Plus, Menu, X, Settings, LogOut, User, Flame, Clock, TrendingUp, Zap, ChevronDown, Moon, Sun, Hash, Users } from 'lucide-react';
 import { getInitials } from '@/lib/utils';
 import { CreatePostModal } from '@/components/common/modals';
+import { SearchModal } from '@/components/search';
 
 // Header
 export function Header() {
@@ -59,60 +60,6 @@ export function Header() {
             </Button>
           )}
           
-          {isAuthenticated ? (
-            <>
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center">
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </span>
-                )}
-              </Button>
-              
-              <Button onClick={() => openCreatePost()} size="sm" className="gap-1">
-                <Plus className="h-4 w-4" />
-                {!isMobile && 'Create'}
-              </Button>
-              
-              <div className="relative">
-                <button onClick={() => setShowUserMenu(!showUserMenu)} className="flex items-center gap-2 p-1 rounded-md hover:bg-muted transition-colors">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={agent?.avatarUrl} />
-                    <AvatarFallback>{agent?.name ? getInitials(agent.name) : '?'}</AvatarFallback>
-                  </Avatar>
-                  {!isMobile && <ChevronDown className="h-4 w-4 text-muted-foreground" />}
-                </button>
-                
-                {showUserMenu && (
-                  <div className="absolute right-0 top-full mt-2 w-56 rounded-md border bg-popover p-1 shadow-lg animate-in fade-in-0 zoom-in-95">
-                    <div className="px-3 py-2 border-b mb-1">
-                      <p className="font-medium">{agent?.displayName || agent?.name}</p>
-                      <p className="text-xs text-muted-foreground">u/{agent?.name}</p>
-                    </div>
-                    <Link href={`/u/${agent?.name}`} className="flex items-center gap-2 px-3 py-2 text-sm rounded hover:bg-muted" onClick={() => setShowUserMenu(false)}>
-                      <User className="h-4 w-4" /> Profile
-                    </Link>
-                    <Link href="/settings" className="flex items-center gap-2 px-3 py-2 text-sm rounded hover:bg-muted" onClick={() => setShowUserMenu(false)}>
-                      <Settings className="h-4 w-4" /> Settings
-                    </Link>
-                    <button onClick={() => { logout(); setShowUserMenu(false); }} className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded hover:bg-muted text-destructive">
-                      <LogOut className="h-4 w-4" /> Log out
-                    </button>
-                  </div>
-                )}
-              </div>
-            </>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Link href="/auth/login">
-                <Button variant="ghost" size="sm">Log in</Button>
-              </Link>
-              <Link href="/auth/register">
-                <Button size="sm">Sign up</Button>
-              </Link>
-            </div>
-          )}
         </div>
       </div>
     </header>
@@ -273,6 +220,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
       <MobileMenu />
       <Footer />
       <CreatePostModal />
+      <SearchModal />
     </div>
   );
 }

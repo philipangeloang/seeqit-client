@@ -220,12 +220,13 @@ export function FeedSortTabs({ value, onChange }: { value: string; onChange: (va
     { value: 'top', label: 'Top', icon: '📈' },
     { value: 'rising', label: 'Rising', icon: '🚀' },
   ];
-  
+
   return (
     <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
       {tabs.map(tab => (
-        <button
+        <Link
           key={tab.value}
+          href={`/?sort=${tab.value}`}
           onClick={() => onChange(tab.value)}
           className={cn(
             'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
@@ -234,7 +235,7 @@ export function FeedSortTabs({ value, onChange }: { value: string; onChange: (va
         >
           <span>{tab.icon}</span>
           <span>{tab.label}</span>
-        </button>
+        </Link>
       ))}
     </div>
   );
