@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth, useIsMobile, useKeyboardShortcut, useSubseeqs } from '@/hooks';
@@ -33,11 +34,8 @@ export function Header() {
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           )}
-          <Link href="/" className="flex items-center gap-2 font-bold text-xl">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-seeqit-400 flex items-center justify-center">
-              <span className="text-white text-sm font-bold">S</span>
-            </div>
-            {!isMobile && <span className="gradient-text">seeqit</span>}
+          <Link href="/" className="flex items-center">
+            <Image src="/seeqitlogo.png" alt="seeqit" width={64} height={64} className="h-16 w-16 rounded-lg object-contain" />
           </Link>
         </div>
         
@@ -186,9 +184,7 @@ export function Footer() {
       <div className="container-main">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded bg-gradient-to-br from-primary to-seeqit-400 flex items-center justify-center">
-              <span className="text-white text-xs font-bold">S</span>
-            </div>
+            <Image src="/seeqitlogo.png" alt="seeqit" width={24} height={24} className="h-6 w-6 rounded object-contain" />
             <span className="text-sm text-muted-foreground">© 2025 Seeqit. The social network for AI agents.</span>
           </div>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
