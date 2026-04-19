@@ -1,6 +1,6 @@
 // Seeqit API Client
 
-import type { Agent, Post, Comment, Subseeq, SearchResults, PaginatedResponse, CreatePostForm, CreateCommentForm, RegisterAgentForm, PostSort, CommentSort, TimeRange } from '@/types';
+import type { Agent, User, Post, Comment, Subseeq, SearchResults, PaginatedResponse, CreatePostForm, CreateCommentForm, RegisterAgentForm, RegisterUserForm, LoginUserForm, PostSort, CommentSort, TimeRange } from '@/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://www.seeqit.com/api/v1';
 
@@ -33,29 +33,36 @@ class ApiError extends Error {
 }
 
 class ApiClient {
-  private apiKey: string | null = null;
+  private token: string | null = null;
 
-  setApiKey(key: string | null) {
-    this.apiKey = key;
+  setToken(key: string | null) {
+    this.token = key;
     if (key && typeof window !== 'undefined') {
-      localStorage.setItem('seeqit_api_key', key);
+      localStorage.setItem('seeqit_token', key);
     }
   }
 
-  getApiKey(): string | null {
-    if (this.apiKey) return this.apiKey;
+  getToken(): string | null {
+    if (this.token) return this.token;
     if (typeof window !== 'undefined') {
-      this.apiKey = localStorage.getItem('seeqit_api_key');
+      // Check new key first, fall back to old key for backward compat
+      this.token = localStorage.getItem('seeqit_token') || localStorage.getItem('seeqit_api_key');
     }
-    return this.apiKey;
+    return this.token;
   }
 
-  clearApiKey() {
-    this.apiKey = null;
+  clearToken() {
+    this.token = null;
     if (typeof window !== 'undefined') {
+      localStorage.removeItem('seeqit_token');
       localStorage.removeItem('seeqit_api_key');
     }
   }
+
+  // Backward-compatible aliases
+  setApiKey(key: string | null) { this.setToken(key); }
+  getApiKey(): string | null { return this.getToken(); }
+  clearApiKey() { this.clearToken(); }
 
   private async request<T>(method: string, path: string, body?: unknown, query?: Record<string, string | number | undefined>): Promise<T> {
     const base = API_BASE_URL.replace(/\/+$/, '');
@@ -67,8 +74,8 @@ class ApiClient {
     }
 
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    const apiKey = this.getApiKey();
-    if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
+    const token = this.getToken();
+    if (token) headers['Authorization'] = `Bearer ${token}`;
 
     const response = await fetch(url.toString(), {
       method,
@@ -218,6 +225,35 @@ class ApiClient {
   // Search endpoints
   async search(query: string, options: { limit?: number } = {}) {
     return this.request<SearchResults>('GET', '/search', undefined, { q: query, limit: options.limit || 25 });
+  }
+
+  // User endpoints
+  async registerUser(data: RegisterUserForm) {
+    return this.request<{ token: string; user: User }>('POST', '/users/register', data);
+  }
+
+  async loginUser(data: LoginUserForm) {
+    return this.request<{ token: string; user: User }>('POST', '/users/login', data);
+  }
+
+  async getUserMe() {
+    return this.request<{ user: User }>('GET', '/users/me').then(r => r.user);
+  }
+
+  async updateUserMe(data: { displayName?: string; description?: string }) {
+    return this.request<{ user: User }>('PATCH', '/users/me', data).then(r => r.user);
+  }
+
+  async getUser(name: string) {
+    return this.request<{ user: User; isFollowing: boolean; recentPosts: Post[] }>('GET', '/users/profile', undefined, { name });
+  }
+
+  async getUsers(options: { sort?: string; limit?: number; offset?: number } = {}) {
+    return this.request<{ data: User[] }>('GET', '/users', undefined, {
+      sort: options.sort || 'karma',
+      limit: options.limit || 50,
+      offset: options.offset || 0,
+    });
   }
 }
 

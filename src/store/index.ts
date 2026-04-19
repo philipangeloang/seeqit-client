@@ -1,69 +1,108 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Agent, Post, PostSort, TimeRange, Notification } from '@/types';
+import type { Agent, User, ActorType, Post, PostSort, TimeRange, Notification } from '@/types';
 import { api } from '@/lib/api';
 
-// Auth Store
+// Auth Store — supports both agent (API key) and human (JWT) auth
 interface AuthStore {
   agent: Agent | null;
-  apiKey: string | null;
+  user: User | null;
+  token: string | null;
+  authType: ActorType | null;
   isLoading: boolean;
   error: string | null;
-  
-  setAgent: (agent: Agent | null) => void;
-  setApiKey: (key: string | null) => void;
-  login: (apiKey: string) => Promise<void>;
+
+  loginAgent: (apiKey: string) => Promise<void>;
+  loginUser: (username: string, password: string) => Promise<void>;
+  registerUser: (username: string, password: string) => Promise<void>;
   logout: () => void;
   refresh: () => Promise<void>;
+
+  // Backward compat alias
+  login: (apiKey: string) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthStore>()(
   persist(
     (set, get) => ({
       agent: null,
-      apiKey: null,
+      user: null,
+      token: null,
+      authType: null,
       isLoading: false,
       error: null,
-      
-      setAgent: (agent) => set({ agent }),
-      setApiKey: (apiKey) => {
-        api.setApiKey(apiKey);
-        set({ apiKey });
-      },
-      
-      login: async (apiKey: string) => {
+
+      loginAgent: async (apiKey: string) => {
         set({ isLoading: true, error: null });
         try {
-          api.setApiKey(apiKey);
+          api.setToken(apiKey);
           const agent = await api.getMe();
-          set({ agent, apiKey, isLoading: false });
+          set({ agent, user: null, token: apiKey, authType: 'agent', isLoading: false });
         } catch (err) {
-          api.clearApiKey();
-          set({ error: (err as Error).message, isLoading: false, agent: null, apiKey: null });
+          api.clearToken();
+          set({ error: (err as Error).message, isLoading: false, agent: null, user: null, token: null, authType: null });
           throw err;
         }
       },
-      
-      logout: () => {
-        api.clearApiKey();
-        set({ agent: null, apiKey: null, error: null });
-      },
-      
-      refresh: async () => {
-        const { apiKey } = get();
-        if (!apiKey) return;
+
+      loginUser: async (username: string, password: string) => {
+        set({ isLoading: true, error: null });
         try {
-          api.setApiKey(apiKey);
-          const agent = await api.getMe();
-          set({ agent });
-        } catch {
-          // Invalid/expired key — clear auth state
-          api.clearApiKey();
-          set({ agent: null, apiKey: null, error: null });
+          const result = await api.loginUser({ username, password });
+          api.setToken(result.token);
+          set({ user: result.user, agent: null, token: result.token, authType: 'user', isLoading: false });
+        } catch (err) {
+          api.clearToken();
+          set({ error: (err as Error).message, isLoading: false, agent: null, user: null, token: null, authType: null });
+          throw err;
         }
       },
+
+      registerUser: async (username: string, password: string) => {
+        set({ isLoading: true, error: null });
+        try {
+          const result = await api.registerUser({ username, password });
+          api.setToken(result.token);
+          set({ user: result.user, agent: null, token: result.token, authType: 'user', isLoading: false });
+        } catch (err) {
+          api.clearToken();
+          set({ error: (err as Error).message, isLoading: false, agent: null, user: null, token: null, authType: null });
+          throw err;
+        }
+      },
+
+      logout: () => {
+        api.clearToken();
+        set({ agent: null, user: null, token: null, authType: null, error: null });
+      },
+
+      refresh: async () => {
+        const { token, authType } = get();
+        if (!token) return;
+        try {
+          api.setToken(token);
+          if (authType === 'user') {
+            const user = await api.getUserMe();
+            set({ user });
+          } else {
+            const agent = await api.getMe();
+            set({ agent });
+          }
+        } catch {
+          api.clearToken();
+          set({ agent: null, user: null, token: null, authType: null, error: null });
+        }
+      },
+
+      // Backward compat: login() is alias for loginAgent()
+      login: async (apiKey: string) => {
+        return get().loginAgent(apiKey);
+      },
     }),
-    { name: 'seeqit-auth', partialize: (state) => ({ apiKey: state.apiKey }) }
+    {
+      name: 'seeqit-auth',
+      partialize: (state) => ({ token: state.token, authType: state.authType })
+    }
   )
 );
 

@@ -3,7 +3,7 @@ import useSWR, { SWRConfiguration } from 'swr';
 import { useInView } from 'react-intersection-observer';
 import { api, ApiError } from '@/lib/api';
 import { useAuthStore, useFeedStore, useUIStore } from '@/store';
-import type { Post, Comment, Agent, Subseeq, PostSort, CommentSort } from '@/types';
+import type { Post, Comment, Agent, User, Subseeq, PostSort, CommentSort, ActorType } from '@/types';
 import { debounce } from '@/lib/utils';
 
 // SWR fetcher
@@ -11,13 +11,38 @@ const fetcher = <T>(fn: () => Promise<T>) => fn();
 
 // Auth hooks
 export function useAuth() {
-  const { agent, apiKey, isLoading, error, login, logout, refresh } = useAuthStore();
-  
+  const store = useAuthStore();
+  const { agent, user, token, authType, isLoading, error, loginAgent, loginUser, registerUser, logout, refresh } = store;
+
   useEffect(() => {
-    if (apiKey && !agent) refresh();
-  }, [apiKey, agent, refresh]);
-  
-  return { agent, apiKey, isLoading, error, isAuthenticated: !!agent, login, logout, refresh };
+    if (token && !agent && !user) refresh();
+  }, [token, agent, user, refresh]);
+
+  const isAuthenticated = !!(agent || user);
+  const actorName = agent?.name || user?.username || null;
+  const actorDisplayName = agent?.displayName || user?.displayName || null;
+  const actorType = authType;
+
+  return {
+    agent,
+    user,
+    token,
+    authType,
+    actorName,
+    actorDisplayName,
+    actorType,
+    isLoading,
+    error,
+    isAuthenticated,
+    loginAgent,
+    loginUser,
+    registerUser,
+    logout,
+    refresh,
+    // Backward compat
+    login: loginAgent,
+    apiKey: token,
+  };
 }
 
 // Post hooks

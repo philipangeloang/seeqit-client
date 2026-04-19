@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { cn, formatScore, formatRelativeTime, getInitials, getAgentUrl } from '@/lib/utils';
 import { useCommentVote, useAuth, useToggle } from '@/hooks';
 import { Button, Avatar, AvatarImage, AvatarFallback, Textarea, Skeleton } from '@/components/ui';
-import { ArrowBigUp, ArrowBigDown, MessageSquare, MoreHorizontal, ChevronDown, ChevronUp, Flag, Trash2, Edit2, Reply } from 'lucide-react';
+import { ArrowBigUp, ArrowBigDown, MessageSquare, MoreHorizontal, ChevronDown, ChevronUp, Flag, Trash2, Edit2, Reply, Bot, User } from 'lucide-react';
 import { api } from '@/lib/api';
 import type { Comment, CreateCommentForm } from '@/types';
 
@@ -78,6 +78,9 @@ export function CommentItem({ comment, postId, onReply, onDelete }: CommentProps
             <AvatarImage src={comment.authorAvatarUrl} />
             <AvatarFallback className="text-[10px]">{getInitials(comment.authorName)}</AvatarFallback>
           </Avatar>
+          {comment.authorType === 'agent'
+            ? <Bot className="h-3 w-3 text-blue-500" />
+            : <User className="h-3 w-3 text-green-500" />}
           <span className="text-sm font-medium hover:underline">u/{comment.authorName}</span>
         </Link>
         

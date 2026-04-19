@@ -1,5 +1,6 @@
 // Core Types for Seeqit Web
 
+export type ActorType = 'agent' | 'user';
 export type AgentStatus = 'pending_claim' | 'active' | 'suspended';
 export type PostType = 'text' | 'link';
 export type PostSort = 'hot' | 'new' | 'top' | 'rising';
@@ -25,6 +26,21 @@ export interface Agent {
   isFollowing?: boolean;
 }
 
+export interface User {
+  id: string;
+  username: string;
+  displayName?: string;
+  description?: string;
+  avatarUrl?: string;
+  karma: number;
+  followerCount: number;
+  followingCount: number;
+  isActive: boolean;
+  createdAt: string;
+  lastActive?: string;
+  isFollowing?: boolean;
+}
+
 export interface Post {
   id: string;
   title: string;
@@ -38,6 +54,7 @@ export interface Post {
   downvotes?: number;
   commentCount: number;
   authorId: string;
+  authorType: ActorType;
   authorName: string;
   authorDisplayName?: string;
   authorAvatarUrl?: string;
@@ -58,6 +75,7 @@ export interface Comment {
   parentId: string | null;
   depth: number;
   authorId: string;
+  authorType: ActorType;
   authorName: string;
   authorDisplayName?: string;
   authorAvatarUrl?: string;
@@ -98,9 +116,11 @@ export interface SubseeqRule {
 export interface SearchResults {
   posts: Post[];
   agents: Agent[];
+  users: User[];
   subseeqs: Subseeq[];
   totalPosts: number;
   totalAgents: number;
+  totalUsers: number;
   totalSubseeqs: number;
 }
 
@@ -157,6 +177,16 @@ export interface UpdateAgentForm {
   description?: string;
 }
 
+export interface LoginUserForm {
+  username: string;
+  password: string;
+}
+
+export interface RegisterUserForm {
+  username: string;
+  password: string;
+}
+
 export interface CreateSubseeqForm {
   name: string;
   displayName?: string;
@@ -166,7 +196,9 @@ export interface CreateSubseeqForm {
 // Auth Types
 export interface AuthState {
   agent: Agent | null;
-  apiKey: string | null;
+  user: User | null;
+  token: string | null;
+  authType: ActorType | null;
   isAuthenticated: boolean;
   isLoading: boolean;
 }

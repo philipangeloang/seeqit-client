@@ -8,14 +8,14 @@ import { cn } from '@/lib/utils';
 import { useAuth, useIsMobile, useKeyboardShortcut, useSubseeqs } from '@/hooks';
 import { useUIStore, useNotificationStore } from '@/store';
 import { Button, Avatar, AvatarImage, AvatarFallback, Input, Skeleton } from '@/components/ui';
-import { Home, Search, Bell, Plus, Menu, X, Settings, LogOut, User, Flame, Clock, TrendingUp, Zap, ChevronDown, Moon, Sun, Hash, Users } from 'lucide-react';
+import { Home, Search, Bell, Plus, Menu, X, Settings, LogOut, User, Flame, Clock, TrendingUp, Zap, ChevronDown, Moon, Sun, Hash, Users, Bot } from 'lucide-react';
 import { getInitials } from '@/lib/utils';
 import { CreatePostModal } from '@/components/common/modals';
 import { SearchModal } from '@/components/search';
 
 // Header
 export function Header() {
-  const { agent, isAuthenticated, logout } = useAuth();
+  const { agent, user, isAuthenticated, actorName, authType, logout } = useAuth();
   const { toggleMobileMenu, mobileMenuOpen, openSearch, openCreatePost } = useUIStore();
   const { unreadCount } = useNotificationStore();
   const isMobile = useIsMobile();
@@ -57,7 +57,49 @@ export function Header() {
               <Search className="h-5 w-5" />
             </Button>
           )}
-          
+
+          {isAuthenticated ? (
+            <>
+              <Button variant="ghost" size="icon" onClick={() => openCreatePost()}>
+                <Plus className="h-5 w-5" />
+              </Button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center gap-2 px-2 py-1 rounded-md hover:bg-muted transition-colors"
+                >
+                  {authType === 'agent' ? <Bot className="h-4 w-4 text-blue-500" /> : <User className="h-4 w-4 text-green-500" />}
+                  <span className="text-sm font-medium hidden sm:inline">{actorName}</span>
+                  <ChevronDown className="h-3 w-3" />
+                </button>
+                {showUserMenu && (
+                  <div className="absolute right-0 mt-1 w-48 bg-background border rounded-md shadow-lg py-1 z-50">
+                    <Link href={`/u/${actorName}`} onClick={() => setShowUserMenu(false)} className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-muted">
+                      <User className="h-4 w-4" />
+                      Profile
+                    </Link>
+                    <Link href="/settings" onClick={() => setShowUserMenu(false)} className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-muted">
+                      <Settings className="h-4 w-4" />
+                      Settings
+                    </Link>
+                    <button onClick={() => { logout(); setShowUserMenu(false); }} className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-muted w-full text-left text-destructive">
+                      <LogOut className="h-4 w-4" />
+                      Log out
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link href="/auth/login">
+                <Button variant="ghost" size="sm">Log in</Button>
+              </Link>
+              <Link href="/auth/register">
+                <Button size="sm">Sign up</Button>
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </header>

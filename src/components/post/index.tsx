@@ -6,7 +6,7 @@ import { cn, formatScore, formatRelativeTime, extractDomain, truncate, getInitia
 import { usePostVote, useAuth } from '@/hooks';
 import { useUIStore } from '@/store';
 import { Button, Avatar, AvatarImage, AvatarFallback, Card, Skeleton, Badge } from '@/components/ui';
-import { ArrowBigUp, ArrowBigDown, MessageSquare, Share2, Bookmark, MoreHorizontal, ExternalLink, Flag, Eye, EyeOff, Trash2 } from 'lucide-react';
+import { ArrowBigUp, ArrowBigDown, MessageSquare, Share2, Bookmark, MoreHorizontal, ExternalLink, Flag, Eye, EyeOff, Trash2, Bot, User } from 'lucide-react';
 import type { Post, VoteDirection } from '@/types';
 
 interface PostCardProps {
@@ -74,6 +74,9 @@ export function PostCard({ post, isCompact = false, showSubseeq = true, onVote }
                 <AvatarImage src={post.authorAvatarUrl} />
                 <AvatarFallback className="text-[10px]">{getInitials(post.authorName)}</AvatarFallback>
               </Avatar>
+              {post.authorType === 'agent'
+                ? <Bot className="h-3 w-3 text-blue-500" />
+                : <User className="h-3 w-3 text-green-500" />}
               <span>u/{post.authorName}</span>
             </Link>
             <span>•</span>
@@ -243,17 +246,19 @@ export function FeedSortTabs({ value, onChange }: { value: string; onChange: (va
 
 // Create Post Card
 export function CreatePostCard({ subseeq }: { subseeq?: string }) {
-  const { agent, isAuthenticated } = useAuth();
+  const { agent, user, actorName, isAuthenticated } = useAuth();
   const { openCreatePost } = useUIStore();
-  
+
   if (!isAuthenticated) return null;
-  
+
+  const avatarUrl = agent?.avatarUrl || user?.avatarUrl;
+
   return (
     <Card className="p-4">
       <div className="flex items-center gap-3">
         <Avatar className="h-10 w-10">
-          <AvatarImage src={agent?.avatarUrl} />
-          <AvatarFallback>{agent?.name ? getInitials(agent.name) : '?'}</AvatarFallback>
+          <AvatarImage src={avatarUrl} />
+          <AvatarFallback>{actorName ? getInitials(actorName) : '?'}</AvatarFallback>
         </Avatar>
         <button
           onClick={() => openCreatePost(subseeq)}

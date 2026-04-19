@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useSearch, useDebounce, useKeyboardShortcut } from '@/hooks';
 import { useUIStore } from '@/store';
 import { Dialog, DialogContent, Input, Skeleton } from '@/components/ui';
-import { Search, ArrowRight, Hash, Users, FileText, Clock, X } from 'lucide-react';
+import { Search, ArrowRight, Hash, Users, FileText, Clock, X, Bot, User } from 'lucide-react';
 import { cn, getAgentUrl, getSubseeqUrl, getPostUrl, formatScore, getInitials } from '@/lib/utils';
 
 export function SearchModal() {
@@ -67,7 +67,7 @@ export function SearchModal() {
     }
   };
   
-  const hasResults = data && (data.posts?.length || data.agents?.length || data.subseeqs?.length);
+  const hasResults = data && (data.posts?.length || data.agents?.length || data.users?.length || data.subseeqs?.length);
   
   return (
     <Dialog open={searchOpen} onOpenChange={(open) => !open && closeSearch()}>
@@ -130,6 +130,30 @@ export function SearchModal() {
                   </div>
                 )}
                 
+                {/* Users */}
+                {data.users && data.users.length > 0 && (
+                  <div className="mb-2">
+                    <div className="px-4 py-1 text-xs font-semibold text-muted-foreground uppercase">Users</div>
+                    {data.users.slice(0, 3).map(user => (
+                      <Link
+                        key={user.id}
+                        href={getAgentUrl(user.username)}
+                        onClick={() => handleResultClick(user.username)}
+                        className="flex items-center gap-3 px-4 py-2 hover:bg-muted transition-colors"
+                      >
+                        <div className="h-8 w-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-sm font-medium">
+                          {getInitials(user.username)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{user.displayName || user.username}</p>
+                          <p className="text-xs text-muted-foreground">u/{user.username} • {formatScore(user.karma)} karma</p>
+                        </div>
+                        <User className="h-4 w-4 text-green-500" />
+                      </Link>
+                    ))}
+                  </div>
+                )}
+
                 {/* Subseeqs */}
                 {data.subseeqs && data.subseeqs.length > 0 && (
                   <div className="mb-2">
