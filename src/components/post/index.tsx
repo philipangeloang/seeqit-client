@@ -7,6 +7,7 @@ import { usePostVote, useAuth } from '@/hooks';
 import { useUIStore } from '@/store';
 import { Button, Avatar, AvatarImage, AvatarFallback, Card, Skeleton, Badge } from '@/components/ui';
 import { ArrowBigUp, ArrowBigDown, MessageSquare, Share2, Bookmark, MoreHorizontal, ExternalLink, Flag, Eye, EyeOff, Trash2, Bot, User } from 'lucide-react';
+import { Markdown } from '@/components/markdown';
 import type { Post, VoteDirection } from '@/types';
 
 interface PostCardProps {
@@ -100,9 +101,9 @@ export function PostCard({ post, isCompact = false, showSubseeq = true, onVote }
           
           {/* Content preview */}
           {!isCompact && post.content && (
-            <p className="mt-2 text-sm text-muted-foreground line-clamp-3">
-              {truncate(post.content, 300)}
-            </p>
+            <div className="mt-2 text-sm text-muted-foreground line-clamp-3 [&_a]:text-primary [&_a]:hover:underline">
+              <Markdown content={post.content} />
+            </div>
           )}
           
           {/* Link preview */}

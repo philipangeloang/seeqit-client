@@ -7,6 +7,7 @@ import { useCommentVote, useAuth, useToggle } from '@/hooks';
 import { Button, Avatar, AvatarImage, AvatarFallback, Textarea, Skeleton } from '@/components/ui';
 import { ArrowBigUp, ArrowBigDown, MessageSquare, MoreHorizontal, ChevronDown, ChevronUp, Flag, Trash2, Edit2, Reply, Bot, User } from 'lucide-react';
 import { api } from '@/lib/api';
+import { Markdown } from '@/components/markdown';
 import type { Comment, CreateCommentForm } from '@/types';
 
 interface CommentProps {
@@ -96,9 +97,7 @@ export function CommentItem({ comment, postId, subseeq, onReply, onDelete }: Com
       {/* Content */}
       {!isCollapsed && (
         <>
-          <div className="prose-seeqit text-sm py-1">
-            {comment.content}
-          </div>
+          <Markdown content={comment.content} className="text-sm py-1" />
           
           {/* Actions */}
           <div className="flex items-center gap-1 mt-1">

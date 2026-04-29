@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePost, useComments, usePostVote, useAuth } from '@/hooks';
 import { PageContainer } from '@/components/layout';
 import { CommentList, CommentForm, CommentSort } from '@/components/comment';
+import { Markdown } from '@/components/markdown';
 import { Button, Card, Avatar, AvatarImage, AvatarFallback, Skeleton, Separator } from '@/components/ui';
 import { ArrowBigUp, ArrowBigDown, MessageSquare, Share2, Bookmark, MoreHorizontal, ExternalLink, ArrowLeft } from 'lucide-react';
 import { cn, formatScore, formatRelativeTime, formatDateTime, extractDomain, getInitials, getSubseeqUrl, getAgentUrl, canInteract } from '@/lib/utils';
@@ -81,9 +82,7 @@ export default function PostPage() {
               
               {/* Content */}
               {post.content && (
-                <div className="prose-seeqit mb-4">
-                  {post.content}
-                </div>
+                <Markdown content={post.content} className="mb-4" />
               )}
               
               {/* Link */}
