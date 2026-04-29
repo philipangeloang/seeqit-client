@@ -8,7 +8,7 @@ import { PageContainer } from '@/components/layout';
 import { CommentList, CommentForm, CommentSort } from '@/components/comment';
 import { Button, Card, Avatar, AvatarImage, AvatarFallback, Skeleton, Separator } from '@/components/ui';
 import { ArrowBigUp, ArrowBigDown, MessageSquare, Share2, Bookmark, MoreHorizontal, ExternalLink, ArrowLeft } from 'lucide-react';
-import { cn, formatScore, formatRelativeTime, formatDateTime, extractDomain, getInitials, getSubseeqUrl, getAgentUrl } from '@/lib/utils';
+import { cn, formatScore, formatRelativeTime, formatDateTime, extractDomain, getInitials, getSubseeqUrl, getAgentUrl, canInteract } from '@/lib/utils';
 import type { CommentSort as CommentSortType, Comment } from '@/types';
 
 export default function PostPage() {
@@ -17,16 +17,17 @@ export default function PostPage() {
   const [commentSort, setCommentSort] = useState<CommentSortType>('top');
   const { data: comments, isLoading: commentsLoading, mutate: mutateComments } = useComments(params.id, { sort: commentSort });
   const { vote, isVoting } = usePostVote(params.id);
-  const { isAuthenticated } = useAuth();
-  
+  const { isAuthenticated, authType } = useAuth();
+
   if (postError) return notFound();
-  
+
   const isUpvoted = post?.userVote === 'up';
   const isDownvoted = post?.userVote === 'down';
   const domain = post?.url ? extractDomain(post.url) : null;
-  
+  const canAct = isAuthenticated && canInteract(authType, post?.subseeq);
+
   const handleVote = async (direction: 'up' | 'down') => {
-    if (!isAuthenticated) return;
+    if (!canAct) return;
     await vote(direction);
     mutatePost();
   };
@@ -98,13 +99,13 @@ export default function PostPage() {
               {/* Actions */}
               <div className="flex items-center gap-2 pt-2 border-t">
                 <div className="flex items-center gap-1">
-                  <button onClick={() => handleVote('up')} disabled={isVoting || !isAuthenticated} className={cn('vote-btn vote-btn-up', isUpvoted && 'active')}>
+                  <button onClick={() => handleVote('up')} disabled={isVoting || !canAct} className={cn('vote-btn vote-btn-up', isUpvoted && 'active')}>
                     <ArrowBigUp className={cn('h-6 w-6', isUpvoted && 'fill-current')} />
                   </button>
                   <span className={cn('font-medium px-1', post.score > 0 && 'text-upvote', post.score < 0 && 'text-downvote')}>
                     {formatScore(post.score)}
                   </span>
-                  <button onClick={() => handleVote('down')} disabled={isVoting || !isAuthenticated} className={cn('vote-btn vote-btn-down', isDownvoted && 'active')}>
+                  <button onClick={() => handleVote('down')} disabled={isVoting || !canAct} className={cn('vote-btn vote-btn-down', isDownvoted && 'active')}>
                     <ArrowBigDown className={cn('h-6 w-6', isDownvoted && 'fill-current')} />
                   </button>
                 </div>
@@ -139,9 +140,11 @@ export default function PostPage() {
         {/* Comments section */}
         <Card className="p-4">
           {/* Comment form */}
-          <div className="mb-6">
-            <CommentForm postId={params.id} onSubmit={handleNewComment} />
-          </div>
+          {canAct && (
+            <div className="mb-6">
+              <CommentForm postId={params.id} onSubmit={handleNewComment} />
+            </div>
+          )}
           
           <Separator className="my-4" />
           
@@ -152,7 +155,7 @@ export default function PostPage() {
           </div>
           
           {/* Comments */}
-          <CommentList comments={comments || []} postId={params.id} isLoading={commentsLoading} />
+          <CommentList comments={comments || []} postId={params.id} subseeq={post?.subseeq} isLoading={commentsLoading} />
         </Card>
       </div>
     </PageContainer>

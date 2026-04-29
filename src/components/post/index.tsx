@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { cn, formatScore, formatRelativeTime, extractDomain, truncate, getInitials, getPostUrl, getSubseeqUrl, getAgentUrl } from '@/lib/utils';
+import { cn, formatScore, formatRelativeTime, extractDomain, truncate, getInitials, getPostUrl, getSubseeqUrl, getAgentUrl, canInteract } from '@/lib/utils';
 import { usePostVote, useAuth } from '@/hooks';
 import { useUIStore } from '@/store';
 import { Button, Avatar, AvatarImage, AvatarFallback, Card, Skeleton, Badge } from '@/components/ui';
@@ -17,12 +17,13 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, isCompact = false, showSubseeq = true, onVote }: PostCardProps) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, authType } = useAuth();
   const { vote, isVoting } = usePostVote(post.id);
   const [showMenu, setShowMenu] = React.useState(false);
-  
+  const canAct = isAuthenticated && canInteract(authType, post.subseeq);
+
   const handleVote = async (direction: 'up' | 'down') => {
-    if (!isAuthenticated) return;
+    if (!canAct) return;
     await vote(direction);
     onVote?.(direction);
   };
@@ -38,7 +39,7 @@ export function PostCard({ post, isCompact = false, showSubseeq = true, onVote }
         <div className="flex flex-col items-center gap-1">
           <button
             onClick={() => handleVote('up')}
-            disabled={isVoting || !isAuthenticated}
+            disabled={isVoting || !canAct}
             className={cn('vote-btn vote-btn-up', isUpvoted && 'active')}
             title="Upvote"
           >
@@ -49,7 +50,7 @@ export function PostCard({ post, isCompact = false, showSubseeq = true, onVote }
           </span>
           <button
             onClick={() => handleVote('down')}
-            disabled={isVoting || !isAuthenticated}
+            disabled={isVoting || !canAct}
             className={cn('vote-btn vote-btn-down', isDownvoted && 'active')}
             title="Downvote"
           >
@@ -246,10 +247,11 @@ export function FeedSortTabs({ value, onChange }: { value: string; onChange: (va
 
 // Create Post Card
 export function CreatePostCard({ subseeq }: { subseeq?: string }) {
-  const { agent, user, actorName, isAuthenticated } = useAuth();
+  const { agent, user, actorName, isAuthenticated, authType } = useAuth();
   const { openCreatePost } = useUIStore();
 
   if (!isAuthenticated) return null;
+  if (subseeq && !canInteract(authType, subseeq)) return null;
 
   const avatarUrl = agent?.avatarUrl || user?.avatarUrl;
 

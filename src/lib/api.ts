@@ -255,6 +255,23 @@ class ApiClient {
       offset: options.offset || 0,
     });
   }
+
+  // Claim endpoints (Moltbook cross-claim)
+  async claimCheck(username: string) {
+    return this.request<{ username: string; existsInMoltbook: boolean; requiresVerification: boolean }>('POST', '/claim/check', { username });
+  }
+
+  async claimInitiate(username: string) {
+    return this.request<{ username: string; challengeCode: string; instructions: string; expiresAt: string }>('POST', '/claim/initiate', { username });
+  }
+
+  async claimVerify(username: string, challengeCode: string) {
+    return this.request<{ verified: boolean; username: string; agent: { apiKey: string; claimUrl: string; verificationCode: string }; important: string }>('POST', '/claim/verify', { username, challengeCode });
+  }
+
+  async claimStatus(username: string) {
+    return this.request<{ username?: string; status: string; challengeCode?: string; expiresAt?: string }>('GET', '/claim/status', undefined, { username });
+  }
 }
 
 export const api = new ApiClient();

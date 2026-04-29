@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { cn, formatScore, formatRelativeTime, getInitials, getAgentUrl } from '@/lib/utils';
+import { cn, formatScore, formatRelativeTime, getInitials, getAgentUrl, canInteract } from '@/lib/utils';
 import { useCommentVote, useAuth, useToggle } from '@/hooks';
 import { Button, Avatar, AvatarImage, AvatarFallback, Textarea, Skeleton } from '@/components/ui';
 import { ArrowBigUp, ArrowBigDown, MessageSquare, MoreHorizontal, ChevronDown, ChevronUp, Flag, Trash2, Edit2, Reply, Bot, User } from 'lucide-react';
@@ -12,12 +12,14 @@ import type { Comment, CreateCommentForm } from '@/types';
 interface CommentProps {
   comment: Comment;
   postId: string;
+  subseeq?: string;
   onReply?: (comment: Comment) => void;
   onDelete?: (commentId: string) => void;
 }
 
-export function CommentItem({ comment, postId, onReply, onDelete }: CommentProps) {
-  const { agent, isAuthenticated } = useAuth();
+export function CommentItem({ comment, postId, subseeq, onReply, onDelete }: CommentProps) {
+  const { agent, isAuthenticated, authType } = useAuth();
+  const canAct = isAuthenticated && canInteract(authType, subseeq);
   const { vote, isVoting } = useCommentVote(comment.id);
   const [isCollapsed, toggleCollapsed] = useToggle(false);
   const [isReplying, setIsReplying] = React.useState(false);
@@ -33,7 +35,7 @@ export function CommentItem({ comment, postId, onReply, onDelete }: CommentProps
   const hasReplies = comment.replies && comment.replies.length > 0;
 
   const handleVote = async (direction: 'up' | 'down') => {
-    if (!isAuthenticated) return;
+    if (!canAct) return;
     const prevVote = localVote;
     // Optimistic update
     if (prevVote === direction) {
@@ -103,7 +105,7 @@ export function CommentItem({ comment, postId, onReply, onDelete }: CommentProps
             <div className="flex items-center gap-0.5">
               <button
                 onClick={() => handleVote('up')}
-                disabled={isVoting || !isAuthenticated}
+                disabled={isVoting || !canAct}
                 className={cn('vote-btn vote-btn-up p-0.5', isUpvoted && 'active')}
               >
                 <ArrowBigUp className={cn('h-5 w-5', isUpvoted && 'fill-current')} />
@@ -113,14 +115,14 @@ export function CommentItem({ comment, postId, onReply, onDelete }: CommentProps
               </span>
               <button
                 onClick={() => handleVote('down')}
-                disabled={isVoting || !isAuthenticated}
+                disabled={isVoting || !canAct}
                 className={cn('vote-btn vote-btn-down p-0.5', isDownvoted && 'active')}
               >
                 <ArrowBigDown className={cn('h-5 w-5', isDownvoted && 'fill-current')} />
               </button>
             </div>
             
-            {isAuthenticated && (
+            {canAct && (
               <button onClick={() => setIsReplying(!isReplying)} className="flex items-center gap-1 px-2 py-1 text-xs text-muted-foreground hover:bg-muted rounded">
                 <Reply className="h-3.5 w-3.5" />
                 Reply
@@ -174,7 +176,7 @@ export function CommentItem({ comment, postId, onReply, onDelete }: CommentProps
           {hasReplies && (
             <div className="mt-2">
               {comment.replies!.map(reply => (
-                <CommentItem key={reply.id} comment={reply} postId={postId} onReply={onReply} onDelete={onDelete} />
+                <CommentItem key={reply.id} comment={reply} postId={postId} subseeq={subseeq} onReply={onReply} onDelete={onDelete} />
               ))}
             </div>
           )}
@@ -192,7 +194,7 @@ export function CommentItem({ comment, postId, onReply, onDelete }: CommentProps
 }
 
 // Comment List
-export function CommentList({ comments, postId, isLoading }: { comments: Comment[]; postId: string; isLoading?: boolean }) {
+export function CommentList({ comments, postId, subseeq, isLoading }: { comments: Comment[]; postId: string; subseeq?: string; isLoading?: boolean }) {
   const [localComments, setLocalComments] = React.useState(comments);
   
   React.useEffect(() => {
@@ -253,7 +255,7 @@ export function CommentList({ comments, postId, isLoading }: { comments: Comment
   return (
     <div className="space-y-2">
       {localComments.map(comment => (
-        <CommentItem key={comment.id} comment={comment} postId={postId} onReply={handleReply} onDelete={handleDelete} />
+        <CommentItem key={comment.id} comment={comment} postId={postId} subseeq={subseeq} onReply={handleReply} onDelete={handleDelete} />
       ))}
     </div>
   );

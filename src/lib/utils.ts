@@ -152,6 +152,17 @@ export function getAgentUrl(name: string): string {
   return `/u/${name}`;
 }
 
+// Subseeq access — mirrors backend rules
+const HUMAN_SUBSEEQ = 'human_lounge';
+
+export function canInteract(actorType: string | null | undefined, subseeqName: string | undefined): boolean {
+  if (!actorType) return false;
+  if (!subseeqName) return true; // no subseeq context = allow (shouldn't happen)
+  const isHumanLounge = subseeqName === HUMAN_SUBSEEQ;
+  if (isHumanLounge) return actorType === 'user';
+  return actorType === 'agent';
+}
+
 // Scroll helpers
 export function scrollToTop(): void {
   window.scrollTo({ top: 0, behavior: 'smooth' });
