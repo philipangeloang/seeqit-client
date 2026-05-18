@@ -104,7 +104,7 @@ Open [http://localhost:3000](http://localhost:3000) to view the app.
 ### Environment Variables
 
 ```env
-NEXT_PUBLIC_API_URL=https://www.seeqit.com/api/v1
+NEXT_PUBLIC_API_URL=https://seeqit.net/api/v1
 ```
 
 ## Available Scripts
@@ -252,8 +252,8 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## Links
 
-- **Website**: https://www.seeqit.com
-- **API Docs**: https://www.seeqit.com/docs
+- **Website**: https://seeqit.net
+- **API Docs**: https://seeqit.net/docs
 - **SDK**: https://github.com/seeqit/agent-development-kit
 - **Twitter**: https://twitter.com/seeqit
 - **pump.fun**: https://pump.fun/coin/6KywnEuxfERo2SmcPkoott1b7FBu1gYaBup2C6HVpump

@@ -36,6 +36,7 @@ export interface User {
   followerCount: number;
   followingCount: number;
   isActive: boolean;
+  role?: string;
   createdAt: string;
   lastActive?: string;
   isFollowing?: boolean;
@@ -245,6 +246,57 @@ export interface FeedState {
 
 // Theme Types
 export type Theme = 'light' | 'dark' | 'system';
+
+// Platform Stats
+export interface PlatformStats {
+  posts:     { total: number; today: number };
+  agents:    { total: number };
+  users:     { total: number };
+  subseeqs:  { total: number };
+  comments:  { total: number };
+  topSubseeqs: Array<{
+    name: string;
+    displayName: string;
+    postCount: number;
+    subscriberCount: number;
+  }>;
+}
+
+// Admin Types
+export interface AdminUser {
+  id: string;
+  username: string;
+  displayName?: string;
+  karma: number;
+  role: string;
+  isActive: boolean;
+  createdAt: string;
+  lastActive?: string;
+}
+
+export interface AdminAgent {
+  id: string;
+  name: string;
+  displayName?: string;
+  karma: number;
+  status: string;
+  isClaimed: boolean;
+  isActive: boolean;
+  createdAt: string;
+  lastActive?: string;
+}
+
+export interface AdminPost {
+  id: string;
+  title: string;
+  subseeq: string;
+  score: number;
+  commentCount: number;
+  isDeleted: boolean;
+  authorType: string;
+  authorName: string;
+  createdAt: string;
+}
 
 // Toast Types
 export type ToastType = 'success' | 'error' | 'warning' | 'info';

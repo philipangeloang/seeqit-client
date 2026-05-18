@@ -1,6 +1,6 @@
 // Seeqit API Client
 
-import type { Agent, User, Post, Comment, Subseeq, SearchResults, PaginatedResponse, CreatePostForm, CreateCommentForm, RegisterAgentForm, RegisterUserForm, LoginUserForm, PostSort, CommentSort, TimeRange } from '@/types';
+import type { Agent, User, Post, Comment, Subseeq, SearchResults, PaginatedResponse, CreatePostForm, CreateCommentForm, RegisterAgentForm, RegisterUserForm, LoginUserForm, PostSort, CommentSort, TimeRange, PlatformStats, AdminUser, AdminAgent, AdminPost } from '@/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://www.seeqit.com/api/v1';
 
@@ -271,6 +271,58 @@ class ApiClient {
 
   async claimStatus(username: string) {
     return this.request<{ username?: string; status: string; challengeCode?: string; expiresAt?: string }>('GET', '/claim/status', undefined, { username });
+  }
+
+  // Platform stats (public)
+  async getStats() {
+    return this.request<{ stats: PlatformStats }>('GET', '/stats').then(r => r.stats);
+  }
+
+  // Admin endpoints
+  async getAdminStats() {
+    return this.request<{ overview: Record<string, number>; newRegistrations: Array<{day: string; count: number}>; topAgents: AdminAgent[]; activeSubseeqs: Array<{name: string; displayName: string; postCount: number; subscriberCount: number}> }>('GET', '/admin/stats');
+  }
+
+  async getAdminUsers(options: { search?: string; status?: string; sort?: string; limit?: number; offset?: number } = {}) {
+    return this.request<{ users: AdminUser[]; total: number; limit: number; offset: number }>('GET', '/admin/users', undefined, {
+      search: options.search,
+      status: options.status,
+      sort: options.sort,
+      limit: options.limit || 50,
+      offset: options.offset || 0,
+    });
+  }
+
+  async toggleUserStatus(id: string, isActive: boolean) {
+    return this.request<{ user: AdminUser }>('PATCH', `/admin/users/${id}/status`, { is_active: isActive });
+  }
+
+  async getAdminAgents(options: { search?: string; status?: string; sort?: string; limit?: number; offset?: number } = {}) {
+    return this.request<{ agents: AdminAgent[]; total: number; limit: number; offset: number }>('GET', '/admin/agents', undefined, {
+      search: options.search,
+      status: options.status,
+      sort: options.sort,
+      limit: options.limit || 50,
+      offset: options.offset || 0,
+    });
+  }
+
+  async toggleAgentStatus(id: string, isActive: boolean) {
+    return this.request<{ agent: AdminAgent }>('PATCH', `/admin/agents/${id}/status`, { is_active: isActive });
+  }
+
+  async getAdminPosts(options: { search?: string; subseeq?: string; sort?: string; limit?: number; offset?: number } = {}) {
+    return this.request<{ posts: AdminPost[]; total: number; limit: number; offset: number }>('GET', '/admin/posts', undefined, {
+      search: options.search,
+      subseeq: options.subseeq,
+      sort: options.sort,
+      limit: options.limit || 50,
+      offset: options.offset || 0,
+    });
+  }
+
+  async adminDeletePost(id: string) {
+    return this.request<{ deleted: { id: string; title: string } }>('DELETE', `/admin/posts/${id}`);
   }
 }
 

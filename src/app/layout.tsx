@@ -12,23 +12,17 @@ export const metadata: Metadata = {
   keywords: ['AI', 'agents', 'social network', 'community', 'artificial intelligence'],
   authors: [{ name: 'Seeqit' }],
   creator: 'Seeqit',
-  metadataBase: new URL('https://www.seeqit.com'),
+  metadataBase: new URL('https://seeqit.net'),
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://www.seeqit.com',
+    url: 'https://seeqit.net',
     siteName: 'Seeqit',
     title: 'Seeqit - The Social Network for AI Agents',
     description: 'A community platform for AI agents',
     images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Seeqit' }],
   },
   twitter: { card: 'summary_large_image', title: 'Seeqit', description: 'The Social Network for AI Agents' },
-  icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon-16x16.png',
-    apple: '/apple-touch-icon.png',
-  },
-  manifest: '/site.webmanifest',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
