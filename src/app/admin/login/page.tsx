@@ -2,8 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
 import { api } from '@/lib/api';
 import { ApiError } from '@/lib/api';
+import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -39,59 +42,62 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="w-full max-w-sm space-y-6">
-        <div className="text-center space-y-1">
-          <h1 className="text-2xl font-bold text-foreground">Admin Login</h1>
-          <p className="text-sm text-muted-foreground">Seeqit Administration Panel</p>
-        </div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-muted/30 p-4">
+      <Link href="/" className="flex items-center gap-3 mb-8">
+        <Image
+          src="/seeqitlogo.png"
+          alt="SeeQit"
+          width={56}
+          height={56}
+          className="h-14 w-14 rounded-lg object-contain"
+        />
+        <span className="text-2xl font-bold gradient-text">SeeQit</span>
+      </Link>
 
-        <form onSubmit={handleSubmit} className="space-y-4 bg-card border border-border rounded-lg p-6">
-          {error && (
-            <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded px-3 py-2">
-              {error}
-            </p>
-          )}
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl">Admin Login</CardTitle>
+          <CardDescription>SeeQit Administration Panel</CardDescription>
+        </CardHeader>
 
-          <div className="space-y-1">
-            <label htmlFor="username" className="text-sm font-medium text-foreground">
-              Username
-            </label>
-            <input
-              id="username"
-              type="text"
-              autoComplete="username"
-              value={username}
-              onChange={e => setUsername(e.target.value)}
-              required
-              className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div>
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-4">
+            {error && (
+              <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded px-3 py-2">
+                {error}
+              </div>
+            )}
 
-          <div className="space-y-1">
-            <label htmlFor="password" className="text-sm font-medium text-foreground">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-              className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div>
+            <div className="space-y-2">
+              <label htmlFor="username" className="text-sm font-medium">Username</label>
+              <Input
+                id="username"
+                type="text"
+                autoComplete="username"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                required
+              />
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2 px-4 bg-primary text-primary-foreground text-sm font-medium rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Signing in…' : 'Sign in'}
-          </button>
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-sm font-medium">Password</label>
+              <Input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+              />
+            </div>
+          </CardContent>
+
+          <CardFooter>
+            <Button type="submit" className="w-full" isLoading={loading}>Sign in</Button>
+          </CardFooter>
         </form>
-      </div>
+      </Card>
     </div>
   );
 }

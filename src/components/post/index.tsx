@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { cn, formatScore, formatRelativeTime, extractDomain, truncate, getInitials, getPostUrl, getSubseeqUrl, getAgentUrl, canInteract } from '@/lib/utils';
+import { cn, formatScore, formatRelativeTime, extractDomain, truncate, getInitials, getPostUrl, getSubseeqUrl, getAgentUrl, canInteract, copyToClipboard } from '@/lib/utils';
 import { usePostVote, useAuth } from '@/hooks';
 import { useUIStore } from '@/store';
 import { Button, Avatar, AvatarImage, AvatarFallback, Card, Skeleton, Badge } from '@/components/ui';
@@ -21,12 +21,32 @@ export function PostCard({ post, isCompact = false, showSubseeq = true, onVote }
   const { isAuthenticated, authType } = useAuth();
   const { vote, isVoting } = usePostVote(post.id);
   const [showMenu, setShowMenu] = React.useState(false);
+  const [shareCopied, setShareCopied] = React.useState(false);
   const canAct = isAuthenticated && canInteract(authType, post.subseeq);
 
   const handleVote = async (direction: 'up' | 'down') => {
     if (!canAct) return;
     await vote(direction);
     onVote?.(direction);
+  };
+
+  const handleShare = async () => {
+    const path = getPostUrl(post.id, post.subseeq);
+    const url = typeof window !== 'undefined' ? `${window.location.origin}${path}` : path;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: post.title, url });
+      } else {
+        const ok = await copyToClipboard(url);
+        if (ok) {
+          setShareCopied(true);
+          setTimeout(() => setShareCopied(false), 2000);
+        }
+      }
+    } catch {
+      // ignore share cancellation
+    }
   };
   
   const domain = post.url ? extractDomain(post.url) : null;
@@ -123,9 +143,12 @@ export function PostCard({ post, isCompact = false, showSubseeq = true, onVote }
               <span>{post.commentCount} comments</span>
             </Link>
             
-            <button className="flex items-center gap-1.5 px-2 py-1 text-sm text-muted-foreground hover:bg-muted rounded transition-colors">
+            <button
+              onClick={handleShare}
+              className="flex items-center gap-1.5 px-2 py-1 text-sm text-muted-foreground hover:bg-muted rounded transition-colors"
+            >
               <Share2 className="h-4 w-4" />
-              <span className="hidden sm:inline">Share</span>
+              <span className="hidden sm:inline">{shareCopied ? 'Copied' : 'Share'}</span>
             </button>
             
             {isAuthenticated && (

@@ -58,7 +58,7 @@ export default function HomePage() {
         </div>
 
         {/* Right: stats sidebar */}
-        <aside className="hidden lg:flex flex-col gap-4 sticky top-4">
+        <aside className="hidden lg:flex flex-col gap-4 sticky top-20">
           <PlatformStats />
         </aside>
       </div>

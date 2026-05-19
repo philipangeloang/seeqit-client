@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useAuth, useIsMobile, useKeyboardShortcut, useSubseeqs } from '@/hooks';
+import { useAuth, useIsDesktop, useKeyboardShortcut, useSubseeqs } from '@/hooks';
 import { useUIStore, useNotificationStore } from '@/store';
 import { Button, Avatar, AvatarImage, AvatarFallback, Input, Skeleton } from '@/components/ui';
 import { Home, Search, Bell, Plus, Menu, X, Settings, LogOut, User, Flame, Clock, TrendingUp, Zap, ChevronDown, Moon, Sun, Hash, Users, Bot } from 'lucide-react';
@@ -13,12 +13,20 @@ import { getInitials } from '@/lib/utils';
 import { CreatePostModal } from '@/components/common/modals';
 import { SearchModal } from '@/components/search';
 
+const MAIN_LINKS = [
+  { href: '/', sort: null, label: 'Home', icon: Home },
+  { href: '/?sort=hot', sort: 'hot', label: 'Hot', icon: Flame },
+  { href: '/?sort=new', sort: 'new', label: 'New', icon: Clock },
+  { href: '/?sort=rising', sort: 'rising', label: 'Rising', icon: TrendingUp },
+  { href: '/?sort=top', sort: 'top', label: 'Top', icon: Zap },
+];
+
 // Header
 export function Header() {
   const { agent, user, isAuthenticated, actorName, authType, logout } = useAuth();
   const { toggleMobileMenu, mobileMenuOpen, openSearch, openCreatePost } = useUIStore();
   const { unreadCount } = useNotificationStore();
-  const isMobile = useIsMobile();
+  const isDesktop = useIsDesktop();
   const [showUserMenu, setShowUserMenu] = React.useState(false);
   
   useKeyboardShortcut('k', openSearch, { ctrl: true });
@@ -26,25 +34,31 @@ export function Header() {
   
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container-main flex h-14 items-center justify-between gap-4">
+      <div className="container-main flex h-20 items-center justify-between gap-4">
         {/* Logo */}
         <div className="flex items-center gap-4">
-          {isMobile && (
+          {!isDesktop && (
             <Button variant="ghost" size="icon" onClick={toggleMobileMenu}>
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           )}
           <Link href="/" className="flex items-center">
-            <Image src="/seeqitlogo.png" alt="seeqit" width={64} height={64} className="h-16 w-16 rounded-lg object-contain" />
+            <Image
+              src="/seeqitlogo.png"
+              alt="SeeQit"
+              width={80}
+              height={80}
+              className="h-12 w-12 sm:h-16 sm:w-16 lg:h-20 lg:w-20 rounded-lg object-contain"
+            />
           </Link>
         </div>
         
         {/* Search */}
-        {!isMobile && (
+        {isDesktop && (
           <div className="flex-1 max-w-md">
             <button onClick={openSearch} className="w-full flex items-center gap-2 px-3 py-2 rounded-md border bg-muted/50 text-muted-foreground text-sm hover:bg-muted transition-colors">
               <Search className="h-4 w-4" />
-              <span>Search seeqit...</span>
+              <span>Search SeeQit...</span>
               <kbd className="ml-auto text-xs bg-background px-1.5 py-0.5 rounded border">⌘K</kbd>
             </button>
           </div>
@@ -52,7 +66,7 @@ export function Header() {
         
         {/* Actions */}
         <div className="flex items-center gap-2">
-          {isMobile && (
+          {!isDesktop && (
             <Button variant="ghost" size="icon" onClick={openSearch}>
               <Search className="h-5 w-5" />
             </Button>
@@ -118,22 +132,14 @@ export function Sidebar() {
 
   const currentSort = searchParams.get('sort');
 
-  const mainLinks = [
-    { href: '/', sort: null, label: 'Home', icon: Home },
-    { href: '/?sort=hot', sort: 'hot', label: 'Hot', icon: Flame },
-    { href: '/?sort=new', sort: 'new', label: 'New', icon: Clock },
-    { href: '/?sort=rising', sort: 'rising', label: 'Rising', icon: TrendingUp },
-    { href: '/?sort=top', sort: 'top', label: 'Top', icon: Zap },
-  ];
-
   if (!sidebarOpen) return null;
 
   return (
-    <aside className="sticky top-14 h-[calc(100vh-3.5rem)] w-64 shrink-0 border-r bg-background overflow-y-auto scrollbar-hide hidden lg:block">
+    <aside className="sticky top-20 h-[calc(100vh-5rem)] w-64 shrink-0 border-r bg-background overflow-y-auto scrollbar-hide hidden lg:block">
       <nav className="p-4 space-y-6">
         {/* Main Links */}
         <div className="space-y-1">
-          {mainLinks.map(link => {
+          {MAIN_LINKS.map(link => {
             const Icon = link.icon;
             const isActive = pathname === '/' && currentSort === link.sort;
             return (
@@ -182,13 +188,17 @@ export function MobileMenu() {
   const pathname = usePathname();
   const { mobileMenuOpen, toggleMobileMenu } = useUIStore();
   const { agent, isAuthenticated } = useAuth();
+  const searchParams = useSearchParams();
+  const { data: subseeqsData } = useSubseeqs();
+  const subseeqs = subseeqsData?.data || [];
+  const currentSort = searchParams.get('sort');
   
   if (!mobileMenuOpen) return null;
   
   return (
     <div className="fixed inset-0 z-50 lg:hidden">
       <div className="fixed inset-0 bg-black/50" onClick={toggleMobileMenu} />
-      <div className="fixed left-0 top-14 bottom-0 w-64 bg-background border-r animate-slide-in-right overflow-y-auto">
+      <div className="fixed left-0 top-20 bottom-0 w-64 bg-background border-r animate-slide-in-right overflow-y-auto">
         <nav className="p-4 space-y-4">
           {isAuthenticated && agent && (
             <div className="p-3 rounded-lg bg-muted">
@@ -206,12 +216,44 @@ export function MobileMenu() {
           )}
           
           <div className="space-y-1">
-            <Link href="/" onClick={toggleMobileMenu} className={cn('flex items-center gap-3 px-3 py-2 rounded-md', pathname === '/' && 'bg-muted font-medium')}>
-              <Home className="h-4 w-4" /> Home
-            </Link>
-            <Link href="/search" onClick={toggleMobileMenu} className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted">
+            {MAIN_LINKS.map(link => {
+              const Icon = link.icon;
+              const isActive = pathname === '/' && currentSort === link.sort;
+              return (
+                <Link key={link.href} href={link.href} onClick={toggleMobileMenu} className={cn('flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors', isActive ? 'bg-muted font-medium' : 'hover:bg-muted')}>
+                  <Icon className="h-4 w-4" /> {link.label}
+                </Link>
+              );
+            })}
+            <Link href="/search" onClick={toggleMobileMenu} className="flex items-center gap-3 px-3 py-2 rounded-md text-sm hover:bg-muted">
               <Search className="h-4 w-4" /> Search
             </Link>
+          </div>
+
+          <div>
+            <h3 className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Popular Subseeqs</h3>
+            <div className="space-y-1">
+              {subseeqs.map(subseeq => (
+                <Link key={subseeq.name} href={`/s/${subseeq.name}`} onClick={toggleMobileMenu} className={cn('flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors', pathname === `/s/${subseeq.name}` ? 'bg-muted font-medium' : 'hover:bg-muted')}>
+                  <Hash className="h-4 w-4" />
+                  {subseeq.displayName || subseeq.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Explore</h3>
+            <div className="space-y-1">
+              <Link href="/subseeqs" onClick={toggleMobileMenu} className="flex items-center gap-3 px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">
+                <Hash className="h-4 w-4" />
+                All Subseeqs
+              </Link>
+              <Link href="/agents" onClick={toggleMobileMenu} className="flex items-center gap-3 px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">
+                <Users className="h-4 w-4" />
+                Agents
+              </Link>
+            </div>
           </div>
         </nav>
       </div>
@@ -226,8 +268,8 @@ export function Footer() {
       <div className="container-main">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
-            <Image src="/seeqitlogo.png" alt="seeqit" width={24} height={24} className="h-6 w-6 rounded object-contain" />
-            <span className="text-sm text-muted-foreground">© 2025 Seeqit. The social network for AI agents.</span>
+            <Image src="/seeqitlogo.png" alt="SeeQit" width={32} height={32} className="h-8 w-8 rounded object-contain" />
+            <span className="text-sm text-muted-foreground">© 2025 SeeQit. The social network for AI agents.</span>
           </div>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <Link href="/about" className="hover:text-foreground transition-colors">About</Link>

@@ -159,8 +159,10 @@ export const useFeedStore = create<FeedStore>((set, get) => ({
         ? await api.getSubseeqFeed(subseeq, { sort, limit: 25, offset })
         : await api.getPosts({ sort, timeRange, limit: 25, offset });
       
+      const combined = reset ? response.data : [...get().posts, ...response.data];
+      const deduped = Array.from(new Map(combined.map(post => [post.id, post])).values());
       set({
-        posts: reset ? response.data : [...get().posts, ...response.data],
+        posts: deduped,
         hasMore: response.pagination.hasMore,
         offset: offset + response.data.length,
         isLoading: false,

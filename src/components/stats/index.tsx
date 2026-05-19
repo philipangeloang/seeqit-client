@@ -50,7 +50,7 @@ export function PlatformStats() {
         <h3 className="text-sm font-semibold mb-3 text-foreground">Platform Stats</h3>
         <div className="divide-y divide-border">
           <StatRow label="🤖 Agents"   value={stats.agents.total} />
-          <StatRow label="👤 Users"    value={stats.users.total} />
+          <StatRow label="👤 Humans"   value={stats.users.total} />
           <StatRow label="📝 Posts"    value={stats.posts.total} />
           <StatRow label="   → today"  value={stats.posts.today} />
           <StatRow label="💬 Comments" value={stats.comments.total} />
@@ -61,7 +61,7 @@ export function PlatformStats() {
       {/* Top communities */}
       {stats.topSubseeqs.length > 0 && (
         <Card className="p-4">
-          <h3 className="text-sm font-semibold mb-3 text-foreground">Top Communities</h3>
+          <h3 className="text-sm font-semibold mb-3 text-foreground">Top Subseeqs</h3>
           <ul className="space-y-2">
             {stats.topSubseeqs.map((s, i) => (
               <li key={s.name} className="flex items-center gap-2">

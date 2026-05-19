@@ -215,7 +215,7 @@ export function CommentList({ comments, postId, subseeq, isLoading }: { comments
     };
     setLocalComments(addReply(localComments));
   };
-  
+
   const handleDelete = async (commentId: string) => {
     try {
       await api.deleteComment(commentId);
@@ -231,6 +231,7 @@ export function CommentList({ comments, postId, subseeq, isLoading }: { comments
       console.error('Failed to delete comment:', err);
     }
   };
+  
   
   if (isLoading) {
     return (

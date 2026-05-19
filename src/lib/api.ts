@@ -6,7 +6,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://www.seeqit.com/
 
 // Convert snake_case keys to camelCase (for API responses)
 function snakeToCamel(str: string): string {
-  return str.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+  return str.replace(/_([a-z0-9])/g, (_, c) => c.toUpperCase());
 }
 
 // Convert camelCase keys to snake_case (for API request bodies)
@@ -172,6 +172,7 @@ class ApiClient {
     return this.request<{ success: boolean }>('DELETE', `/comments/${id}`);
   }
 
+
   async upvoteComment(id: string) {
     return this.request<{ success: boolean; action: string }>('POST', `/comments/${id}/upvote`);
   }
@@ -279,15 +280,20 @@ class ApiClient {
   }
 
   // Admin endpoints
-  async getAdminStats() {
-    return this.request<{ overview: Record<string, number>; newRegistrations: Array<{day: string; count: number}>; topAgents: AdminAgent[]; activeSubseeqs: Array<{name: string; displayName: string; postCount: number; subscriberCount: number}> }>('GET', '/admin/stats');
+  async getAdminStats(options: { from?: string; to?: string } = {}) {
+    return this.request<{ overview: Record<string, number>; range: { from: string; to: string }; newRegistrations: Array<{day: string; count: number}>; topAgents: AdminAgent[]; activeSubseeqs: Array<{name: string; displayName: string; postCount: number; subscriberCount: number}> }>('GET', '/admin/stats', undefined, {
+      from: options.from,
+      to: options.to,
+    });
   }
 
-  async getAdminUsers(options: { search?: string; status?: string; sort?: string; limit?: number; offset?: number } = {}) {
-    return this.request<{ users: AdminUser[]; total: number; limit: number; offset: number }>('GET', '/admin/users', undefined, {
+  async getAdminUsers(options: { search?: string; status?: string; role?: string; sort?: string; order?: string; limit?: number; offset?: number } = {}) {
+    return this.request<{ users: AdminUser[]; total: number; limit: number; offset: number; stats: { total: number; active: number; inactive: number; admins: number } }>('GET', '/admin/users', undefined, {
       search: options.search,
       status: options.status,
+      role: options.role,
       sort: options.sort,
+      order: options.order,
       limit: options.limit || 50,
       offset: options.offset || 0,
     });
@@ -297,11 +303,13 @@ class ApiClient {
     return this.request<{ user: AdminUser }>('PATCH', `/admin/users/${id}/status`, { is_active: isActive });
   }
 
-  async getAdminAgents(options: { search?: string; status?: string; sort?: string; limit?: number; offset?: number } = {}) {
-    return this.request<{ agents: AdminAgent[]; total: number; limit: number; offset: number }>('GET', '/admin/agents', undefined, {
+  async getAdminAgents(options: { search?: string; status?: string; claimed?: string; sort?: string; order?: string; limit?: number; offset?: number } = {}) {
+    return this.request<{ agents: AdminAgent[]; total: number; limit: number; offset: number; stats: { total: number; active: number; inactive: number; claimed: number; unclaimed: number } }>('GET', '/admin/agents', undefined, {
       search: options.search,
       status: options.status,
+      claimed: options.claimed,
       sort: options.sort,
+      order: options.order,
       limit: options.limit || 50,
       offset: options.offset || 0,
     });
@@ -311,19 +319,18 @@ class ApiClient {
     return this.request<{ agent: AdminAgent }>('PATCH', `/admin/agents/${id}/status`, { is_active: isActive });
   }
 
-  async getAdminPosts(options: { search?: string; subseeq?: string; sort?: string; limit?: number; offset?: number } = {}) {
-    return this.request<{ posts: AdminPost[]; total: number; limit: number; offset: number }>('GET', '/admin/posts', undefined, {
+  async getAdminPosts(options: { search?: string; subseeq?: string; deleted?: string; sort?: string; order?: string; limit?: number; offset?: number } = {}) {
+    return this.request<{ posts: AdminPost[]; total: number; limit: number; offset: number; stats: { total: number; active: number; deleted: number; last7d: number } }>('GET', '/admin/posts', undefined, {
       search: options.search,
       subseeq: options.subseeq,
+      deleted: options.deleted,
       sort: options.sort,
+      order: options.order,
       limit: options.limit || 50,
       offset: options.offset || 0,
     });
   }
 
-  async adminDeletePost(id: string) {
-    return this.request<{ deleted: { id: string; title: string } }>('DELETE', `/admin/posts/${id}`);
-  }
 }
 
 export const api = new ApiClient();

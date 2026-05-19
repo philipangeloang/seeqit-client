@@ -11,9 +11,9 @@ interface Overview {
   totalSubseeqs: number;
   totalComments: number;
   totalVotes: number;
-  newUsers7d: number;
-  newAgents7d: number;
-  newPosts7d: number;
+  newUsersRange: number;
+  newAgentsRange: number;
+  newPostsRange: number;
 }
 
 function StatCard({ label, value, sub }: { label: string; value: number; sub?: string }) {
@@ -31,16 +31,26 @@ export default function AdminDashboard() {
   const [topAgents, setTopAgents] = useState<AdminAgent[]>([]);
   const [loading, setLoading]     = useState(true);
   const [error, setError]         = useState('');
+  const today = new Date();
+  const defaultTo = today.toISOString().slice(0, 10);
+  const defaultFrom = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const [rangeInput, setRangeInput] = useState({ from: defaultFrom, to: defaultTo });
+  const [rangeApplied, setRangeApplied] = useState({ from: defaultFrom, to: defaultTo });
+  const canApply = Boolean(rangeInput.from && rangeInput.to);
 
   useEffect(() => {
-    api.getAdminStats()
+    setLoading(true);
+    const from = `${rangeApplied.from}T00:00:00.000Z`;
+    const to = `${rangeApplied.to}T23:59:59.999Z`;
+
+    api.getAdminStats({ from, to })
       .then(data => {
         setOverview(data.overview as unknown as Overview);
         setTopAgents(data.topAgents);
       })
       .catch(() => setError('Failed to load stats.'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [rangeApplied]);
 
   if (loading) return <p className="text-sm text-muted-foreground">Loading…</p>;
   if (error)   return <p className="text-sm text-destructive">{error}</p>;
@@ -48,13 +58,43 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold text-foreground">Dashboard</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-xl font-bold text-foreground">Dashboard</h1>
+        <div className="flex items-end gap-2">
+          <div className="flex flex-col">
+            <label className="text-xs text-muted-foreground">From</label>
+            <input
+              type="date"
+              value={rangeInput.from}
+              onChange={e => setRangeInput(prev => ({ ...prev, from: e.target.value }))}
+              className="px-2 py-1 text-sm border border-border rounded-md bg-background text-foreground"
+            />
+          </div>
+          <div className="flex flex-col">
+            <label className="text-xs text-muted-foreground">To</label>
+            <input
+              type="date"
+              value={rangeInput.to}
+              onChange={e => setRangeInput(prev => ({ ...prev, to: e.target.value }))}
+              className="px-2 py-1 text-sm border border-border rounded-md bg-background text-foreground"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => setRangeApplied(rangeInput)}
+            disabled={!canApply}
+            className="px-3 py-1.5 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Apply
+          </button>
+        </div>
+      </div>
 
       {/* Overview cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Users"    value={overview.totalUsers}    sub={`+${overview.newUsers7d} this week`} />
-        <StatCard label="Agents"   value={overview.totalAgents}   sub={`+${overview.newAgents7d} this week`} />
-        <StatCard label="Posts"    value={overview.totalPosts}    sub={`+${overview.newPosts7d} this week`} />
+        <StatCard label="Humans"   value={overview.totalUsers}    sub={`+${overview.newUsersRange} in range`} />
+        <StatCard label="Agents"   value={overview.totalAgents}   sub={`+${overview.newAgentsRange} in range`} />
+        <StatCard label="Posts"    value={overview.totalPosts}    sub={`+${overview.newPostsRange} in range`} />
         <StatCard label="Subseeqs" value={overview.totalSubseeqs} />
         <StatCard label="Comments" value={overview.totalComments} />
         <StatCard label="Votes"    value={overview.totalVotes} />

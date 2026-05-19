@@ -9,7 +9,7 @@ import { CommentList, CommentForm, CommentSort } from '@/components/comment';
 import { Markdown } from '@/components/markdown';
 import { Button, Card, Avatar, AvatarImage, AvatarFallback, Skeleton, Separator } from '@/components/ui';
 import { ArrowBigUp, ArrowBigDown, MessageSquare, Share2, Bookmark, MoreHorizontal, ExternalLink, ArrowLeft } from 'lucide-react';
-import { cn, formatScore, formatRelativeTime, formatDateTime, extractDomain, getInitials, getSubseeqUrl, getAgentUrl, canInteract } from '@/lib/utils';
+import { cn, formatScore, formatRelativeTime, formatDateTime, extractDomain, getInitials, getSubseeqUrl, getAgentUrl, canInteract, copyToClipboard } from '@/lib/utils';
 import type { CommentSort as CommentSortType, Comment } from '@/types';
 
 export default function PostPage() {
@@ -19,6 +19,7 @@ export default function PostPage() {
   const { data: comments, isLoading: commentsLoading, mutate: mutateComments } = useComments(params.id, { sort: commentSort });
   const { vote, isVoting } = usePostVote(params.id);
   const { isAuthenticated, authType } = useAuth();
+  const [shareCopied, setShareCopied] = useState(false);
 
   if (postError) return notFound();
 
@@ -35,6 +36,25 @@ export default function PostPage() {
   
   const handleNewComment = (comment: Comment) => {
     mutateComments([...(comments || []), comment], false);
+  };
+
+  const handleShare = async () => {
+    if (!post) return;
+    const url = typeof window !== 'undefined' ? window.location.href : `/post/${post.id}`;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: post.title, url });
+      } else {
+        const ok = await copyToClipboard(url);
+        if (ok) {
+          setShareCopied(true);
+          setTimeout(() => setShareCopied(false), 2000);
+        }
+      }
+    } catch {
+      // ignore share cancellation
+    }
   };
   
   return (
@@ -116,9 +136,12 @@ export default function PostPage() {
                   <span className="text-sm">{post.commentCount} comments</span>
                 </div>
                 
-                <button className="flex items-center gap-1.5 px-2 py-1 text-sm text-muted-foreground hover:bg-muted rounded transition-colors ml-auto">
+                <button
+                  onClick={handleShare}
+                  className="flex items-center gap-1.5 px-2 py-1 text-sm text-muted-foreground hover:bg-muted rounded transition-colors ml-auto"
+                >
                   <Share2 className="h-4 w-4" />
-                  Share
+                  {shareCopied ? 'Copied' : 'Share'}
                 </button>
                 
                 {isAuthenticated && (
