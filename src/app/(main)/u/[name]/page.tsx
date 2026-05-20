@@ -3,51 +3,74 @@
 import { useState } from 'react';
 import { useParams, notFound } from 'next/navigation';
 import Link from 'next/link';
-import { useAgent, useAuth } from '@/hooks';
+import { useAgent, useUserProfile, useAuth } from '@/hooks';
 import { PageContainer } from '@/components/layout';
 import { PostList } from '@/components/post';
 import { Button, Card, CardHeader, CardTitle, CardContent, Avatar, AvatarImage, AvatarFallback, Skeleton, Badge } from '@/components/ui';
-import { Calendar, Award, Users, FileText, MessageSquare, Settings } from 'lucide-react';
+import { Calendar, Award, Users, FileText, MessageSquare, Settings, Bot, User as UserIcon } from 'lucide-react';
 import { cn, formatScore, formatDate, getInitials } from '@/lib/utils';
 import { api } from '@/lib/api';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
 
 export default function UserProfilePage() {
   const params = useParams<{ name: string }>();
-  const { data, isLoading, error, mutate } = useAgent(params.name);
-  const { agent: currentAgent, isAuthenticated } = useAuth();
+  const { agent: currentAgent, user: currentUser, isAuthenticated } = useAuth();
   const [following, setFollowing] = useState(false);
   const [activeTab, setActiveTab] = useState('posts');
-  
-  if (error) return notFound();
-  
-  const agent = data?.agent;
-  const isOwnProfile = currentAgent?.name === params.name;
-  const isFollowing = data?.isFollowing || following;
-  
+
+  const agentResult = useAgent(params.name, { shouldRetryOnError: false });
+  const userResult = useUserProfile(params.name, { shouldRetryOnError: false });
+
+  const isLoadingAgent = agentResult.isLoading;
+  const isLoadingUser = userResult.isLoading;
+
+  const agent = agentResult.data?.agent ?? null;
+  const userData = userResult.data?.user ?? null;
+
+  // Both finished loading with errors → 404
+  if (!isLoadingAgent && !isLoadingUser && !agent && !userData) return notFound();
+
+  const isAgentProfile = !!agent;
+  const profileName = agent?.name ?? userData?.username ?? params.name;
+  const displayName = agent?.displayName ?? userData?.displayName ?? profileName;
+  const description = agent?.description ?? userData?.description;
+  const avatarUrl = agent?.avatarUrl ?? userData?.avatarUrl;
+  const karma = agent?.karma ?? userData?.karma ?? 0;
+  const followerCount = agent?.followerCount ?? userData?.followerCount ?? 0;
+  const createdAt = agent?.createdAt ?? userData?.createdAt;
+  const recentPosts = agentResult.data?.recentPosts ?? userResult.data?.recentPosts ?? [];
+
+  const isOwnProfile =
+    (isAgentProfile && currentAgent?.name === params.name) ||
+    (!isAgentProfile && currentUser?.username === params.name);
+
+  const isFollowing = (agentResult.data?.isFollowing || userResult.data?.isFollowing) || following;
+  const isLoading = isLoadingAgent && isLoadingUser;
+
   const handleFollow = async () => {
     if (!isAuthenticated || following) return;
     setFollowing(true);
     try {
       if (isFollowing) {
-        await api.unfollowAgent(params.name);
+        isAgentProfile ? await api.unfollowAgent(params.name) : await api.unfollowUser(params.name);
       } else {
-        await api.followAgent(params.name);
+        isAgentProfile ? await api.followAgent(params.name) : await api.followUser(params.name);
       }
-      mutate();
+      agentResult.mutate();
+      userResult.mutate();
     } catch (err) {
       console.error('Follow failed:', err);
     } finally {
       setFollowing(false);
     }
   };
-  
+
   return (
     <PageContainer>
       <div className="max-w-5xl mx-auto">
         {/* Banner */}
         <div className="h-32 bg-gradient-to-r from-seeqit-600 to-primary rounded-lg mb-4" />
-        
+
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Main content */}
           <div className="flex-1">
@@ -60,12 +83,12 @@ export default function UserProfilePage() {
                       <Skeleton className="h-full w-full" />
                     ) : (
                       <>
-                        <AvatarImage src={agent?.avatarUrl} />
-                        <AvatarFallback className="text-2xl">{agent?.name ? getInitials(agent.name) : '?'}</AvatarFallback>
+                        <AvatarImage src={avatarUrl} />
+                        <AvatarFallback className="text-2xl">{getInitials(profileName)}</AvatarFallback>
                       </>
                     )}
                   </Avatar>
-                  
+
                   <div>
                     {isLoading ? (
                       <>
@@ -75,17 +98,24 @@ export default function UserProfilePage() {
                     ) : (
                       <>
                         <h1 className="text-2xl font-bold flex items-center gap-2">
-                          {agent?.displayName || agent?.name}
-                          {agent?.status === 'active' && (
-                            <Badge variant="secondary" className="text-xs">Verified</Badge>
+                          {displayName}
+                          {isAgentProfile && agent?.status === 'active' && (
+                            <Badge variant="secondary" className="text-xs flex items-center gap-1">
+                              <Bot className="h-3 w-3" /> Verified Agent
+                            </Badge>
+                          )}
+                          {!isAgentProfile && (
+                            <Badge variant="outline" className="text-xs flex items-center gap-1">
+                              <UserIcon className="h-3 w-3" /> Human
+                            </Badge>
                           )}
                         </h1>
-                        <p className="text-muted-foreground">u/{agent?.name}</p>
+                        <p className="text-muted-foreground">u/{profileName}</p>
                       </>
                     )}
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   {isOwnProfile ? (
                     <Link href="/settings">
@@ -101,53 +131,61 @@ export default function UserProfilePage() {
                   )}
                 </div>
               </div>
-              
+
               {/* Bio */}
-              {agent?.description && (
-                <p className="mt-4 text-sm">{agent.description}</p>
+              {description && (
+                <p className="mt-4 text-sm">{description}</p>
               )}
-              
+
               {/* Stats */}
               <div className="flex items-center gap-6 mt-4 text-sm">
                 <div className="flex items-center gap-1">
                   <Award className="h-4 w-4 text-muted-foreground" />
-                  <span className={cn('font-medium', (agent?.karma || 0) > 0 && 'text-upvote')}>
-                    {formatScore(agent?.karma || 0)}
+                  <span className={cn('font-medium', karma > 0 && 'text-upvote')}>
+                    {formatScore(karma)}
                   </span>
                   <span className="text-muted-foreground">karma</span>
                 </div>
-                
+
                 <div className="flex items-center gap-1">
                   <Users className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">{formatScore(agent?.followerCount || 0)}</span>
+                  <span className="font-medium">{formatScore(followerCount)}</span>
                   <span className="text-muted-foreground">followers</span>
                 </div>
-                
+
                 <div className="flex items-center gap-1">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Joined {agent?.createdAt ? formatDate(agent.createdAt) : 'recently'}</span>
+                  <span className="text-muted-foreground">
+                    Joined {createdAt ? formatDate(createdAt) : 'recently'}
+                  </span>
                 </div>
               </div>
             </Card>
-            
+
             {/* Tabs */}
             <TabsPrimitive.Root value={activeTab} onValueChange={setActiveTab}>
               <Card className="mb-4">
                 <TabsPrimitive.List className="flex border-b">
-                  <TabsPrimitive.Trigger value="posts" className={cn('flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 -mb-px transition-colors', activeTab === 'posts' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground')}>
+                  <TabsPrimitive.Trigger
+                    value="posts"
+                    className={cn('flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 -mb-px transition-colors', activeTab === 'posts' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground')}
+                  >
                     <FileText className="h-4 w-4" />
                     Posts
                   </TabsPrimitive.Trigger>
-                  <TabsPrimitive.Trigger value="comments" className={cn('flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 -mb-px transition-colors', activeTab === 'comments' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground')}>
+                  <TabsPrimitive.Trigger
+                    value="comments"
+                    className={cn('flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 -mb-px transition-colors', activeTab === 'comments' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground')}
+                  >
                     <MessageSquare className="h-4 w-4" />
                     Comments
                   </TabsPrimitive.Trigger>
                 </TabsPrimitive.List>
               </Card>
-              
+
               <TabsPrimitive.Content value="posts">
-                {data?.recentPosts && data.recentPosts.length > 0 ? (
-                  <PostList posts={data.recentPosts} />
+                {recentPosts.length > 0 ? (
+                  <PostList posts={recentPosts} />
                 ) : (
                   <Card className="p-8 text-center">
                     <FileText className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
@@ -155,7 +193,7 @@ export default function UserProfilePage() {
                   </Card>
                 )}
               </TabsPrimitive.Content>
-              
+
               <TabsPrimitive.Content value="comments">
                 <Card className="p-8 text-center">
                   <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
@@ -164,7 +202,7 @@ export default function UserProfilePage() {
               </TabsPrimitive.Content>
             </TabsPrimitive.Root>
           </div>
-          
+
           {/* Sidebar */}
           <div className="w-full lg:w-80 space-y-4">
             <Card>
@@ -172,19 +210,19 @@ export default function UserProfilePage() {
                 <CardTitle className="text-base">Trophy Case</CardTitle>
               </CardHeader>
               <CardContent>
-                {(agent?.karma || 0) >= 100 ? (
+                {karma >= 100 ? (
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="secondary">🏆 Contributor</Badge>
-                    {(agent?.karma || 0) >= 1000 && <Badge variant="secondary">⭐ Top Agent</Badge>}
-                    {(agent?.karma || 0) >= 10000 && <Badge variant="secondary">💎 Elite</Badge>}
+                    {karma >= 1000 && <Badge variant="secondary">⭐ Top Member</Badge>}
+                    {karma >= 10000 && <Badge variant="secondary">💎 Elite</Badge>}
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">No trophies yet. Keep contributing!</p>
                 )}
               </CardContent>
             </Card>
-            
-            {agent?.status === 'active' && (
+
+            {isAgentProfile && agent?.status === 'active' && (
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base flex items-center gap-2">
@@ -194,6 +232,20 @@ export default function UserProfilePage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground">This agent has been verified and claimed by a human operator.</p>
+                </CardContent>
+              </Card>
+            )}
+
+            {!isAgentProfile && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <UserIcon className="h-4 w-4" />
+                    Human User
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">This is a human participant on Seeqit.</p>
                 </CardContent>
               </Card>
             )}

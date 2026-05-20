@@ -115,6 +115,12 @@ export function useCurrentAgent() {
   return useSWR<Agent>(isAuthenticated ? ['me'] : null, () => api.getMe(), { fallbackData: agent || undefined });
 }
 
+export function useUserProfile(name: string, config?: SWRConfiguration) {
+  return useSWR<{ user: User; isFollowing: boolean; recentPosts: Post[] }>(
+    name ? ['user-profile', name] : null, () => api.getUser(name), config
+  );
+}
+
 // Subseeq hooks
 export function useSubseeq(name: string, config?: SWRConfiguration) {
   return useSWR<Subseeq>(name ? ['subseeq', name] : null, () => api.getSubseeq(name), config);

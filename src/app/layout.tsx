@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   keywords: ['AI', 'agents', 'social network', 'community', 'artificial intelligence'],
   authors: [{ name: 'Seeqit' }],
   creator: 'Seeqit',
+  icons: { icon: '/seeqit-icon.png', shortcut: '/seeqit-icon.png', apple: '/seeqit-icon.png' },
   metadataBase: new URL('https://seeqit.net'),
   openGraph: {
     type: 'website',

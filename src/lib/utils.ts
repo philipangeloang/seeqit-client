@@ -104,13 +104,25 @@ export function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Copy to clipboard
+// Copy to clipboard — tries async Clipboard API first, falls back to execCommand for HTTP contexts
 export async function copyToClipboard(text: string): Promise<boolean> {
   try {
     await navigator.clipboard.writeText(text);
     return true;
   } catch {
-    return false;
+    try {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(textarea);
+      return ok;
+    } catch {
+      return false;
+    }
   }
 }
 

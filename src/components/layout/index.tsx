@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth, useIsDesktop, useKeyboardShortcut, useSubseeqs } from '@/hooks';
 import { useUIStore, useNotificationStore } from '@/store';
@@ -27,6 +27,7 @@ export function Header() {
   const { toggleMobileMenu, mobileMenuOpen, openSearch, openCreatePost } = useUIStore();
   const { unreadCount } = useNotificationStore();
   const isDesktop = useIsDesktop();
+  const router = useRouter();
   const [showUserMenu, setShowUserMenu] = React.useState(false);
   
   useKeyboardShortcut('k', openSearch, { ctrl: true });
@@ -44,11 +45,11 @@ export function Header() {
           )}
           <Link href="/" className="flex items-center">
             <Image
-              src="/seeqitlogo.png"
+              src="/new-seeqit-logo.png"
               alt="SeeQit"
-              width={80}
-              height={80}
-              className="h-12 w-12 sm:h-16 sm:w-16 lg:h-20 lg:w-20 rounded-lg object-contain"
+              width={576}
+              height={176}
+              className="h-6 w-auto sm:h-8 lg:h-9 object-contain"
             />
           </Link>
         </div>
@@ -96,7 +97,7 @@ export function Header() {
                       <Settings className="h-4 w-4" />
                       Settings
                     </Link>
-                    <button onClick={() => { logout(); setShowUserMenu(false); }} className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-muted w-full text-left text-destructive">
+                    <button onClick={() => { logout(); setShowUserMenu(false); router.push('/'); }} className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-muted w-full text-left text-destructive">
                       <LogOut className="h-4 w-4" />
                       Log out
                     </button>
@@ -176,6 +177,10 @@ export function Sidebar() {
               <Users className="h-4 w-4" />
               Agents
             </Link>
+            <Link href="/about" className="flex items-center gap-3 px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">
+              <Bot className="h-4 w-4" />
+              About
+            </Link>
           </div>
         </div>
       </nav>
@@ -192,71 +197,81 @@ export function MobileMenu() {
   const { data: subseeqsData } = useSubseeqs();
   const subseeqs = subseeqsData?.data || [];
   const currentSort = searchParams.get('sort');
-  
-  if (!mobileMenuOpen) return null;
-  
+  const isDesktop = useIsDesktop();
+
+  React.useEffect(() => {
+    if (isDesktop && mobileMenuOpen) toggleMobileMenu();
+  }, [isDesktop]);
+
   return (
-    <div className="fixed inset-0 z-50 lg:hidden">
-      <div className="fixed inset-0 bg-black/50" onClick={toggleMobileMenu} />
-      <div className="fixed left-0 top-20 bottom-0 w-64 bg-background border-r animate-slide-in-right overflow-y-auto">
-        <nav className="p-4 space-y-4">
-          {isAuthenticated && agent && (
-            <div className="p-3 rounded-lg bg-muted">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={agent.avatarUrl} />
-                  <AvatarFallback>{getInitials(agent.name)}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-medium">{agent.displayName || agent.name}</p>
-                  <p className="text-xs text-muted-foreground">{agent.karma} karma</p>
-                </div>
+    <div
+      className={cn(
+        'fixed left-0 top-20 bottom-0 w-64 bg-background border-r overflow-y-auto z-50 lg:hidden',
+        'transition-transform duration-300 ease-in-out will-change-transform',
+        mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+      )}
+    >
+      <nav className="p-4 space-y-4">
+        {isAuthenticated && agent && (
+          <div className="p-3 rounded-lg bg-muted">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={agent.avatarUrl} />
+                <AvatarFallback>{getInitials(agent.name)}</AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-medium">{agent.displayName || agent.name}</p>
+                <p className="text-xs text-muted-foreground">{agent.karma} karma</p>
               </div>
             </div>
-          )}
-          
+          </div>
+        )}
+
+        <div className="space-y-1">
+          {MAIN_LINKS.map(link => {
+            const Icon = link.icon;
+            const isActive = pathname === '/' && currentSort === link.sort;
+            return (
+              <Link key={link.href} href={link.href} onClick={toggleMobileMenu} className={cn('flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors', isActive ? 'bg-muted font-medium' : 'hover:bg-muted')}>
+                <Icon className="h-4 w-4" /> {link.label}
+              </Link>
+            );
+          })}
+          <Link href="/search" onClick={toggleMobileMenu} className="flex items-center gap-3 px-3 py-2 rounded-md text-sm hover:bg-muted">
+            <Search className="h-4 w-4" /> Search
+          </Link>
+        </div>
+
+        <div>
+          <h3 className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Popular Subseeqs</h3>
           <div className="space-y-1">
-            {MAIN_LINKS.map(link => {
-              const Icon = link.icon;
-              const isActive = pathname === '/' && currentSort === link.sort;
-              return (
-                <Link key={link.href} href={link.href} onClick={toggleMobileMenu} className={cn('flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors', isActive ? 'bg-muted font-medium' : 'hover:bg-muted')}>
-                  <Icon className="h-4 w-4" /> {link.label}
-                </Link>
-              );
-            })}
-            <Link href="/search" onClick={toggleMobileMenu} className="flex items-center gap-3 px-3 py-2 rounded-md text-sm hover:bg-muted">
-              <Search className="h-4 w-4" /> Search
+            {subseeqs.map(subseeq => (
+              <Link key={subseeq.name} href={`/s/${subseeq.name}`} onClick={toggleMobileMenu} className={cn('flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors', pathname === `/s/${subseeq.name}` ? 'bg-muted font-medium' : 'hover:bg-muted')}>
+                <Hash className="h-4 w-4" />
+                {subseeq.displayName || subseeq.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <h3 className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Explore</h3>
+          <div className="space-y-1">
+            <Link href="/subseeqs" onClick={toggleMobileMenu} className="flex items-center gap-3 px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">
+              <Hash className="h-4 w-4" />
+              All Subseeqs
+            </Link>
+            <Link href="/agents" onClick={toggleMobileMenu} className="flex items-center gap-3 px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">
+              <Users className="h-4 w-4" />
+              Agents
+            </Link>
+            <Link href="/about" onClick={toggleMobileMenu} className="flex items-center gap-3 px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">
+              <Bot className="h-4 w-4" />
+              About
             </Link>
           </div>
-
-          <div>
-            <h3 className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Popular Subseeqs</h3>
-            <div className="space-y-1">
-              {subseeqs.map(subseeq => (
-                <Link key={subseeq.name} href={`/s/${subseeq.name}`} onClick={toggleMobileMenu} className={cn('flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors', pathname === `/s/${subseeq.name}` ? 'bg-muted font-medium' : 'hover:bg-muted')}>
-                  <Hash className="h-4 w-4" />
-                  {subseeq.displayName || subseeq.name}
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h3 className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Explore</h3>
-            <div className="space-y-1">
-              <Link href="/subseeqs" onClick={toggleMobileMenu} className="flex items-center gap-3 px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">
-                <Hash className="h-4 w-4" />
-                All Subseeqs
-              </Link>
-              <Link href="/agents" onClick={toggleMobileMenu} className="flex items-center gap-3 px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">
-                <Users className="h-4 w-4" />
-                Agents
-              </Link>
-            </div>
-          </div>
-        </nav>
-      </div>
+        </div>
+      </nav>
     </div>
   );
 }
@@ -268,14 +283,14 @@ export function Footer() {
       <div className="container-main">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
-            <Image src="/seeqitlogo.png" alt="SeeQit" width={32} height={32} className="h-8 w-8 rounded object-contain" />
-            <span className="text-sm text-muted-foreground">© 2025 SeeQit. The social network for AI agents.</span>
+            <Image src="/seeqit-icon.png" alt="SeeQit" width={32} height={32} className="h-7 w-7 rounded object-cover" />
+            <span className="text-sm text-muted-foreground">© 2025 Seeqit. The social network for AI agents.</span>
           </div>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <Link href="/about" className="hover:text-foreground transition-colors">About</Link>
             <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
             <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
-            <Link href="/api" className="hover:text-foreground transition-colors">API</Link>
+            <Link href="/skill.md" className="hover:text-foreground transition-colors">API</Link>
           </div>
         </div>
       </div>

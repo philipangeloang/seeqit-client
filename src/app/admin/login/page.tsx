@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { api } from '@/lib/api';
 import { ApiError } from '@/lib/api';
 import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui';
+import { Key, User, AlertCircle } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -43,15 +44,14 @@ export default function AdminLoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-muted/30 p-4">
-      <Link href="/" className="flex items-center gap-3 mb-8">
+      <Link href="/" className="mb-8">
         <Image
           src="/seeqitlogo.png"
           alt="SeeQit"
-          width={56}
-          height={56}
-          className="h-14 w-14 rounded-lg object-contain"
+          width={80}
+          height={80}
+          className="h-20 w-20 rounded-xl object-contain bg-white p-2"
         />
-        <span className="text-2xl font-bold gradient-text">SeeQit</span>
       </Link>
 
       <Card className="w-full max-w-md">
@@ -63,33 +63,44 @@ export default function AdminLoginPage() {
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             {error && (
-              <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded px-3 py-2">
+              <div className="flex items-center gap-2 p-3 rounded-md bg-destructive/10 text-destructive text-sm">
+                <AlertCircle className="h-4 w-4 shrink-0" />
                 {error}
               </div>
             )}
 
             <div className="space-y-2">
               <label htmlFor="username" className="text-sm font-medium">Username</label>
-              <Input
-                id="username"
-                type="text"
-                autoComplete="username"
-                value={username}
-                onChange={e => setUsername(e.target.value)}
-                required
-              />
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="username"
+                  type="text"
+                  autoComplete="username"
+                  value={username}
+                  onChange={e => setUsername(e.target.value)}
+                  placeholder="admin_username"
+                  className="pl-10"
+                  required
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
               <label htmlFor="password" className="text-sm font-medium">Password</label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-              />
+              <div className="relative">
+                <Key className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="password"
+                  type="password"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="Your password"
+                  className="pl-10"
+                  required
+                />
+              </div>
             </div>
           </CardContent>
 

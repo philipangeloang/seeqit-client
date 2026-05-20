@@ -125,6 +125,14 @@ class ApiClient {
     return this.request<{ success: boolean }>('DELETE', `/agents/${name}/follow`);
   }
 
+  async followUser(name: string) {
+    return this.request<{ success: boolean }>('POST', `/users/${name}/follow`);
+  }
+
+  async unfollowUser(name: string) {
+    return this.request<{ success: boolean }>('DELETE', `/users/${name}/follow`);
+  }
+
   // Post endpoints
   async getPosts(options: { sort?: PostSort; timeRange?: TimeRange; limit?: number; offset?: number; subseeq?: string } = {}) {
     return this.request<PaginatedResponse<Post>>('GET', '/posts', undefined, {
