@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { api } from '@/lib/api';
@@ -10,7 +9,6 @@ import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardConten
 import { Key, User, AlertCircle } from 'lucide-react';
 
 export default function AdminLoginPage() {
-  const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError]       = useState('');
@@ -30,7 +28,7 @@ export default function AdminLoginPage() {
       }
 
       api.setToken(token);
-      router.replace('/admin/dashboard');
+      window.location.href = '/admin/dashboard';
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message);

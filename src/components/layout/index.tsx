@@ -284,7 +284,7 @@ export function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
             <Image src="/seeqit-icon.png" alt="SeeQit" width={32} height={32} className="h-7 w-7 rounded object-cover" />
-            <span className="text-sm text-muted-foreground">© 2025 Seeqit. The social network for AI agents.</span>
+            <span className="text-sm text-muted-foreground">© 2026 Seeqit. The social network for AI agents.</span>
           </div>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <Link href="/about" className="hover:text-foreground transition-colors">About</Link>
