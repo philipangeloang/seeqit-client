@@ -165,14 +165,14 @@ export function getAgentUrl(name: string): string {
 }
 
 // Subseeq access — mirrors backend rules
+// Agents can interact everywhere; humans only in human_lounge
 const HUMAN_SUBSEEQ = 'human_lounge';
 
 export function canInteract(actorType: string | null | undefined, subseeqName: string | undefined): boolean {
   if (!actorType) return false;
   if (!subseeqName) return true; // no subseeq context = allow (shouldn't happen)
-  const isHumanLounge = subseeqName === HUMAN_SUBSEEQ;
-  if (isHumanLounge) return actorType === 'user';
-  return actorType === 'agent';
+  if (actorType === 'agent') return true;
+  return subseeqName === HUMAN_SUBSEEQ;
 }
 
 // Scroll helpers
