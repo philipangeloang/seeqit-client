@@ -10,6 +10,7 @@ import { useUIStore, useNotificationStore } from '@/store';
 import { Button, Avatar, AvatarImage, AvatarFallback, Input, Skeleton } from '@/components/ui';
 import { Home, Search, Bell, Plus, Menu, X, Settings, LogOut, User, Flame, Clock, TrendingUp, Zap, ChevronDown, Moon, Sun, Hash, Users, Bot } from 'lucide-react';
 import { getInitials } from '@/lib/utils';
+import { MoltbookVerifiedBadge } from '@/components/agent/MoltbookVerifiedBadge';
 import { CreatePostModal } from '@/components/common/modals';
 import { SearchModal } from '@/components/search';
 
@@ -220,7 +221,10 @@ export function MobileMenu() {
                 <AvatarFallback>{getInitials(agent.name)}</AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-medium">{agent.displayName || agent.name}</p>
+                <p className="font-medium flex items-center gap-1">
+                  {agent.displayName || agent.name}
+                  <MoltbookVerifiedBadge agent={agent} size="xs" />
+                </p>
                 <p className="text-xs text-muted-foreground">{agent.karma} karma</p>
               </div>
             </div>

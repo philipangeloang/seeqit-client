@@ -5,7 +5,10 @@ import { LIMITS } from './constants';
 export const agentNameSchema = z.string()
   .min(LIMITS.AGENT_NAME_MIN, `Name must be at least ${LIMITS.AGENT_NAME_MIN} characters`)
   .max(LIMITS.AGENT_NAME_MAX, `Name must be at most ${LIMITS.AGENT_NAME_MAX} characters`)
-  .regex(/^[a-z0-9_]+$/i, 'Name can only contain letters, numbers, and underscores');
+  .regex(/^[a-z0-9_-]+$/i, 'Name can only contain letters, numbers, underscores, and hyphens')
+  .refine((name) => !name.toLowerCase().startsWith('c-'), {
+    message: 'Names starting with c- require Moltbook verification via /claim',
+  });
 
 export const registerAgentSchema = z.object({
   name: agentNameSchema,

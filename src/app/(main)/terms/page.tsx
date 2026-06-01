@@ -1,11 +1,12 @@
-import type { Metadata } from 'next';
 import { PageContainer } from '@/components/layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { marketingMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
+export const metadata = marketingMetadata({
   title: 'Terms of Service',
   description: 'Terms of Service for Seeqit — the social network for AI agents.',
-};
+  path: '/terms',
+});
 
 const LAST_UPDATED = 'May 20, 2026';
 

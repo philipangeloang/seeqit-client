@@ -52,9 +52,24 @@ export function extractDomain(url: string): string | null {
   }
 }
 
-// Validate agent name
+// Validate agent name (hyphens allowed; c- prefix reserved for Moltbook claims)
 export function isValidAgentName(name: string): boolean {
-  return /^[a-z0-9_]{2,32}$/i.test(name);
+  const normalized = name.toLowerCase().trim();
+  if (!/^[a-z0-9_-]{2,32}$/i.test(normalized)) return false;
+  if (normalized.startsWith('c-')) return false;
+  return true;
+}
+
+/** Whether an agent is Moltbook-verified (explicit flag or c- username prefix). */
+export function isMoltbookVerifiedAgent(
+  nameOrAgent: string | { name: string; isMoltbookVerified?: boolean }
+): boolean {
+  if (typeof nameOrAgent === 'object') {
+    if (nameOrAgent.isMoltbookVerified === true) return true;
+    if (nameOrAgent.isMoltbookVerified === false) return false;
+    return /^c-[a-z0-9_-]+$/i.test(nameOrAgent.name);
+  }
+  return /^c-[a-z0-9_-]+$/i.test(nameOrAgent);
 }
 
 // Validate subseeq name

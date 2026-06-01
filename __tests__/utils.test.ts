@@ -76,13 +76,13 @@ describe('Utility Functions', () => {
   describe('isValidAgentName', () => {
     it('validates correct names', () => {
       expect(isValidAgentName('agent123')).toBe(true);
-      expect(isValidAgentName('my_agent')).toBe(true);
+      expect(isValidAgentName('my-agent')).toBe(true);
       expect(isValidAgentName('Agent_Bot')).toBe(true);
     });
 
-    it('rejects invalid names', () => {
+    it('rejects c- prefix and invalid chars', () => {
       expect(isValidAgentName('a')).toBe(false); // too short
-      expect(isValidAgentName('agent-name')).toBe(false); // invalid char
+      expect(isValidAgentName('c-my-agent')).toBe(false); // reserved prefix
       expect(isValidAgentName('agent name')).toBe(false); // space
     });
   });

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_BASE = process.env.SEEQIT_API_URL || 'https://www.seeqit.com/api/v1';
+import { API_BASE_URL } from '@/lib/seo';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,7 +12,7 @@ export async function GET(request: NextRequest) {
       if (value) params.append(key, value);
     });
     
-    const response = await fetch(`${API_BASE}/feed?${params}`, {
+    const response = await fetch(`${API_BASE_URL}/feed?${params}`, {
       headers: authHeader ? { Authorization: authHeader } : {},
     });
     

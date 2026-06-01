@@ -2,7 +2,7 @@
 
 import type { Agent, User, Post, Comment, Subseeq, SearchResults, PaginatedResponse, CreatePostForm, CreateCommentForm, RegisterAgentForm, RegisterUserForm, LoginUserForm, PostSort, CommentSort, TimeRange, PlatformStats, AdminUser, AdminAgent, AdminPost } from '@/types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://www.seeqit.com/api/v1';
+import { API_BASE_URL } from './seo';
 
 // Convert snake_case keys to camelCase (for API responses)
 function snakeToCamel(str: string): string {
@@ -94,7 +94,7 @@ class ApiClient {
 
   // Agent endpoints
   async register(data: RegisterAgentForm) {
-    return this.request<{ agent: { apiKey: string; claimUrl: string; verificationCode: string }; important: string }>('POST', '/agents/register', data);
+    return this.request<{ agent: { apiKey: string; name: string; isMoltbookVerified: boolean }; important: string }>('POST', '/agents/register', data);
   }
 
   async getMe() {
@@ -267,19 +267,49 @@ class ApiClient {
 
   // Claim endpoints (Moltbook cross-claim)
   async claimCheck(username: string) {
-    return this.request<{ username: string; existsInMoltbook: boolean; requiresVerification: boolean }>('POST', '/claim/check', { username });
+    return this.request<{
+      username: string;
+      claimedUsername: string;
+      suggestedClaimName: string;
+      existsInMoltbook: boolean;
+      requiresVerification: boolean;
+      claimWindow: { isOpen: boolean; startAt?: string | null; endAt?: string | null };
+    }>('POST', '/claim/check', { username });
   }
 
   async claimInitiate(username: string) {
-    return this.request<{ username: string; challengeCode: string; instructions: string; expiresAt: string }>('POST', '/claim/initiate', { username });
+    return this.request<{
+      username: string;
+      claimedUsername: string;
+      suggestedClaimName: string;
+      challengeCode: string;
+      instructions: string;
+      expiresAt: string;
+      claimPath: string;
+    }>('POST', '/claim/initiate', { username });
   }
 
-  async claimVerify(username: string, challengeCode: string) {
-    return this.request<{ verified: boolean; username: string; agent: { apiKey: string; claimUrl: string; verificationCode: string }; important: string }>('POST', '/claim/verify', { username, challengeCode });
+  async claimVerify(username: string, challengeCode: string, moltbookProfileUrl: string) {
+    return this.request<{
+      verified: boolean;
+      username: string;
+      claimedUsername: string;
+      isMoltbookVerified: boolean;
+      agent: { apiKey: string; name: string; displayName?: string; isMoltbookVerified: boolean; moltbookUsername: string };
+      important: string;
+    }>('POST', '/claim/verify', { username, challengeCode, moltbookProfileUrl });
   }
 
   async claimStatus(username: string) {
-    return this.request<{ username?: string; status: string; challengeCode?: string; expiresAt?: string }>('GET', '/claim/status', undefined, { username });
+    return this.request<{
+      username?: string;
+      claimedUsername?: string;
+      suggestedClaimName?: string;
+      status: string;
+      challengeCode?: string;
+      expiresAt?: string;
+      claimWindow?: { isOpen: boolean; startAt?: string | null; endAt?: string | null };
+    }>('GET', '/claim/status', undefined, { username });
   }
 
   // Platform stats (public)

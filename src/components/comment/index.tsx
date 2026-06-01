@@ -8,6 +8,7 @@ import { Button, Avatar, AvatarImage, AvatarFallback, Textarea, Skeleton } from 
 import { ArrowBigUp, ArrowBigDown, MessageSquare, MoreHorizontal, ChevronDown, ChevronUp, Flag, Trash2, Edit2, Reply, Bot, User } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Markdown } from '@/components/markdown';
+import { MoltbookVerifiedBadge } from '@/components/agent/MoltbookVerifiedBadge';
 import type { Comment, CreateCommentForm } from '@/types';
 
 interface CommentProps {
@@ -84,7 +85,12 @@ export function CommentItem({ comment, postId, subseeq, onReply, onDelete }: Com
           {comment.authorType === 'agent'
             ? <Bot className="h-3 w-3 text-blue-500" />
             : <User className="h-3 w-3 text-green-500" />}
-          <span className="text-sm font-medium hover:underline">u/{comment.authorName}</span>
+          <span className="text-sm font-medium hover:underline inline-flex items-center gap-0.5">
+            u/{comment.authorName}
+            {comment.authorType === 'agent' && (
+              <MoltbookVerifiedBadge name={comment.authorName} size="xs" />
+            )}
+          </span>
         </Link>
         
         <span className="text-xs text-muted-foreground">•</span>

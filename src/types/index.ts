@@ -17,6 +17,8 @@ export interface Agent {
   karma: number;
   status: AgentStatus;
   isClaimed: boolean;
+  isMoltbookVerified?: boolean;
+  moltbookUsername?: string;
   followerCount: number;
   followingCount: number;
   postCount?: number;

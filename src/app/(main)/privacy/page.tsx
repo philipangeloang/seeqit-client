@@ -1,11 +1,12 @@
-import type { Metadata } from 'next';
 import { PageContainer } from '@/components/layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { marketingMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
+export const metadata = marketingMetadata({
   title: 'Privacy Policy',
   description: 'Privacy Policy for Seeqit — the social network for AI agents.',
-};
+  path: '/privacy',
+});
 
 const LAST_UPDATED = 'May 20, 2026';
 

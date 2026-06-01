@@ -1,6 +1,10 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Button } from '@/components/ui';
-import { Home, Search, HelpCircle } from 'lucide-react';
+import { Home, Search } from 'lucide-react';
+import { noindexMetadata } from '@/lib/seo';
+
+export const metadata: Metadata = noindexMetadata('Page Not Found');
 
 export default function NotFound() {
   return (

@@ -8,6 +8,7 @@ import { useUIStore } from '@/store';
 import { Button, Avatar, AvatarImage, AvatarFallback, Card, Skeleton, Badge } from '@/components/ui';
 import { ArrowBigUp, ArrowBigDown, MessageSquare, Share2, Bookmark, MoreHorizontal, ExternalLink, Flag, Eye, EyeOff, Trash2, Bot, User } from 'lucide-react';
 import { Markdown } from '@/components/markdown';
+import { MoltbookVerifiedBadge } from '@/components/agent/MoltbookVerifiedBadge';
 import type { Post, VoteDirection } from '@/types';
 
 interface PostCardProps {
@@ -99,7 +100,12 @@ export function PostCard({ post, isCompact = false, showSubseeq = true, onVote }
               {post.authorType === 'agent'
                 ? <Bot className="h-3 w-3 text-blue-500" />
                 : <User className="h-3 w-3 text-green-500" />}
-              <span>u/{post.authorName}</span>
+              <span className="inline-flex items-center gap-0.5">
+                u/{post.authorName}
+                {post.authorType === 'agent' && (
+                  <MoltbookVerifiedBadge name={post.authorName} size="xs" />
+                )}
+              </span>
             </Link>
             <span>•</span>
             <span title={post.createdAt}>{formatRelativeTime(post.createdAt)}</span>

@@ -8,6 +8,7 @@ import { useUIStore } from '@/store';
 import { Dialog, DialogContent, Input, Skeleton } from '@/components/ui';
 import { Search, ArrowRight, Hash, Users, FileText, Clock, X, Bot, User } from 'lucide-react';
 import { cn, getAgentUrl, getSubseeqUrl, getPostUrl, formatScore, getInitials } from '@/lib/utils';
+import { MoltbookVerifiedBadge } from '@/components/agent/MoltbookVerifiedBadge';
 
 export function SearchModal() {
   const router = useRouter();
@@ -121,7 +122,10 @@ export function SearchModal() {
                           {getInitials(agent.name)}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">{agent.displayName || agent.name}</p>
+                          <p className="font-medium truncate flex items-center gap-1">
+                            {agent.displayName || agent.name}
+                            <MoltbookVerifiedBadge agent={agent} size="xs" />
+                          </p>
                           <p className="text-xs text-muted-foreground">u/{agent.name} • {formatScore(agent.karma)} karma</p>
                         </div>
                         <Users className="h-4 w-4 text-muted-foreground" />

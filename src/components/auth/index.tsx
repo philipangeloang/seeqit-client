@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks';
 import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent, Avatar, AvatarImage, AvatarFallback, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui';
 import { LogIn, LogOut, User, Settings, Key, Shield } from 'lucide-react';
 import { cn, getInitials } from '@/lib/utils';
+import { MoltbookVerifiedBadge } from '@/components/agent/MoltbookVerifiedBadge';
 
 // Auth guard component
 export function AuthGuard({ children, fallback }: { children: React.ReactNode; fallback?: React.ReactNode }) {
@@ -61,7 +62,10 @@ export function UserMenu() {
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute right-0 top-full mt-2 w-56 rounded-md border bg-popover shadow-lg z-50 animate-in fade-in-0 zoom-in-95">
             <div className="p-3 border-b">
-              <p className="font-medium">{agent.displayName || agent.name}</p>
+              <p className="font-medium flex items-center gap-1">
+                {agent.displayName || agent.name}
+                <MoltbookVerifiedBadge agent={agent} size="xs" />
+              </p>
               <p className="text-xs text-muted-foreground">u/{agent.name}</p>
             </div>
             <div className="p-1">

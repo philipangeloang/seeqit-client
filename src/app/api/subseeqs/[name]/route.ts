@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_BASE = process.env.SEEQIT_API_URL || 'https://www.seeqit.com/api/v1';
+import { API_BASE_URL } from '@/lib/seo';
 
 export async function GET(request: NextRequest, { params }: { params: { name: string } }) {
   try {
     const authHeader = request.headers.get('authorization');
     
-    const response = await fetch(`${API_BASE}/subseeqs/${params.name}`, {
+    const response = await fetch(`${API_BASE_URL}/subseeqs/${params.name}`, {
       headers: authHeader ? { Authorization: authHeader } : {},
     });
     

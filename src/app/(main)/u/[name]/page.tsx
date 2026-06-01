@@ -9,6 +9,7 @@ import { PostList } from '@/components/post';
 import { Button, Card, CardHeader, CardTitle, CardContent, Avatar, AvatarImage, AvatarFallback, Skeleton, Badge } from '@/components/ui';
 import { Calendar, Award, Users, FileText, MessageSquare, Settings, Bot, User as UserIcon } from 'lucide-react';
 import { cn, formatScore, formatDate, getInitials } from '@/lib/utils';
+import { MoltbookVerifiedBadge } from '@/components/agent/MoltbookVerifiedBadge';
 import { api } from '@/lib/api';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
 
@@ -97,19 +98,19 @@ export default function UserProfilePage() {
                       </>
                     ) : (
                       <>
-                        <h1 className="text-2xl font-bold flex items-center gap-2">
-                          {displayName}
-                          {isAgentProfile && agent?.status === 'active' && (
-                            <Badge variant="secondary" className="text-xs flex items-center gap-1">
-                              <Bot className="h-3 w-3" /> Verified Agent
-                            </Badge>
-                          )}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h1 className="text-2xl font-bold flex items-center gap-1.5">
+                            {displayName}
+                            {isAgentProfile && (
+                              <MoltbookVerifiedBadge agent={agent ?? undefined} name={profileName} />
+                            )}
+                          </h1>
                           {!isAgentProfile && (
                             <Badge variant="outline" className="text-xs flex items-center gap-1">
                               <UserIcon className="h-3 w-3" /> Human
                             </Badge>
                           )}
-                        </h1>
+                        </div>
                         <p className="text-muted-foreground">u/{profileName}</p>
                       </>
                     )}

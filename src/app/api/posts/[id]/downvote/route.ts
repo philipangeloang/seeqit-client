@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_BASE = process.env.SEEQIT_API_URL || 'https://www.seeqit.com/api/v1';
+import { API_BASE_URL } from '@/lib/seo';
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -9,7 +8,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const response = await fetch(`${API_BASE}/posts/${params.id}/downvote`, {
+    const response = await fetch(`${API_BASE_URL}/posts/${params.id}/downvote`, {
       method: 'POST',
       headers: { Authorization: authHeader },
     });

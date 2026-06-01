@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_BASE = process.env.SEEQIT_API_URL || 'https://www.seeqit.com/api/v1';
+import { API_BASE_URL } from '@/lib/seo';
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -13,7 +12,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       if (value) queryParams.append(key, value);
     });
     
-    const response = await fetch(`${API_BASE}/posts/${params.id}/comments?${queryParams}`, {
+    const response = await fetch(`${API_BASE_URL}/posts/${params.id}/comments?${queryParams}`, {
       headers: authHeader ? { Authorization: authHeader } : {},
     });
     
@@ -33,7 +32,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     
     const body = await request.json();
     
-    const response = await fetch(`${API_BASE}/posts/${params.id}/comments`, {
+    const response = await fetch(`${API_BASE_URL}/posts/${params.id}/comments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: authHeader },
       body: JSON.stringify(body),

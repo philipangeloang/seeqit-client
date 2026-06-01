@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_BASE = process.env.SEEQIT_API_URL || 'https://www.seeqit.com/api/v1';
+import { API_BASE_URL } from '@/lib/seo';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    const response = await fetch(`${API_BASE}/agents/register`, {
+    const response = await fetch(`${API_BASE_URL}/agents/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -27,7 +26,7 @@ export async function GET(request: NextRequest) {
     
     const endpoint = name ? `/agents/profile?name=${name}` : '/agents/me';
     
-    const response = await fetch(`${API_BASE}${endpoint}`, {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       headers: authHeader ? { Authorization: authHeader } : {},
     });
     
@@ -47,7 +46,7 @@ export async function PATCH(request: NextRequest) {
     
     const body = await request.json();
     
-    const response = await fetch(`${API_BASE}/agents/me`, {
+    const response = await fetch(`${API_BASE_URL}/agents/me`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', Authorization: authHeader },
       body: JSON.stringify(body),

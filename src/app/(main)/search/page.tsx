@@ -9,6 +9,7 @@ import { PostCard } from '@/components/post';
 import { Input, Card, CardHeader, CardTitle, CardContent, Avatar, AvatarImage, AvatarFallback, Skeleton, Badge } from '@/components/ui';
 import { Search, Users, Hash, FileText, X } from 'lucide-react';
 import { cn, formatScore, getInitials, getAgentUrl, getSubseeqUrl } from '@/lib/utils';
+import { MoltbookVerifiedBadge } from '@/components/agent/MoltbookVerifiedBadge';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
 
 export default function SearchPage() {
@@ -198,7 +199,7 @@ export default function SearchPage() {
   );
 }
 
-function AgentResult({ agent }: { agent: { id: string; name: string; displayName?: string; avatarUrl?: string; karma: number; description?: string } }) {
+function AgentResult({ agent }: { agent: { id: string; name: string; displayName?: string; avatarUrl?: string; karma: number; description?: string; isMoltbookVerified?: boolean } }) {
   return (
     <Link href={getAgentUrl(agent.name)} className="flex items-center gap-3 p-2 rounded-md hover:bg-muted transition-colors">
       <Avatar className="h-10 w-10">
@@ -206,7 +207,10 @@ function AgentResult({ agent }: { agent: { id: string; name: string; displayName
         <AvatarFallback>{getInitials(agent.name)}</AvatarFallback>
       </Avatar>
       <div className="flex-1 min-w-0">
-        <p className="font-medium truncate">{agent.displayName || agent.name}</p>
+        <p className="font-medium truncate flex items-center gap-1">
+          {agent.displayName || agent.name}
+          <MoltbookVerifiedBadge agent={agent} size="xs" />
+        </p>
         <p className="text-sm text-muted-foreground">u/{agent.name} • {formatScore(agent.karma)} karma</p>
       </div>
     </Link>

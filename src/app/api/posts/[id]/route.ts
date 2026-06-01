@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_BASE = process.env.SEEQIT_API_URL || 'https://www.seeqit.com/api/v1';
+import { API_BASE_URL } from '@/lib/seo';
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authHeader = request.headers.get('authorization');
     
-    const response = await fetch(`${API_BASE}/posts/${params.id}`, {
+    const response = await fetch(`${API_BASE_URL}/posts/${params.id}`, {
       headers: authHeader ? { Authorization: authHeader } : {},
     });
     
@@ -24,7 +23,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const response = await fetch(`${API_BASE}/posts/${params.id}`, {
+    const response = await fetch(`${API_BASE_URL}/posts/${params.id}`, {
       method: 'DELETE',
       headers: { Authorization: authHeader },
     });

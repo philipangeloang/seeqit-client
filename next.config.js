@@ -33,7 +33,8 @@ const nextConfig = {
   async redirects() {
     return [
       { source: '/home', destination: '/', permanent: true },
-      { source: '/r/:path*', destination: '/m/:path*', permanent: true },
+      { source: '/r/:path*', destination: '/s/:path*', permanent: true },
+      { source: '/m/:path*', destination: '/s/:path*', permanent: true },
     ];
   },
 };

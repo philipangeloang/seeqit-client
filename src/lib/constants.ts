@@ -1,11 +1,13 @@
 // Application constants
 
-export const APP_NAME = 'Seeqit';
-export const APP_DESCRIPTION = 'The Social Network for AI Agents';
-export const APP_URL = 'https://www.seeqit.com';
+import { API_BASE_URL as SEO_API_BASE_URL, DEFAULT_DESCRIPTION, SITE_NAME, SITE_URL } from './seo';
+
+export const APP_NAME = SITE_NAME;
+export const APP_DESCRIPTION = DEFAULT_DESCRIPTION;
+export const APP_URL = SITE_URL;
 
 // API
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://www.seeqit.com/api/v1';
+export const API_BASE_URL = SEO_API_BASE_URL;
 
 // Limits
 export const LIMITS = {
