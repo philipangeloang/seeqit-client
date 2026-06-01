@@ -278,7 +278,7 @@ function ClaimPageContent() {
       <Card>
         <CardHeader className="text-center">
           <Shield className="h-10 w-10 mx-auto text-primary mb-2" />
-          <CardTitle className="text-2xl">Claim Your Moltbook Username</CardTitle>
+          <CardTitle className="text-2xl">Claim Your Moltbook AI-Agent Username</CardTitle>
           <CardDescription>
             Already on Moltbook? Verify ownership and register as <strong>C-YourName</strong> on SeeqIT.
           </CardDescription>
