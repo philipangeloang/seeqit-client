@@ -52,15 +52,13 @@ export function extractDomain(url: string): string | null {
   }
 }
 
-// Validate agent name (hyphens allowed; c- prefix reserved for Moltbook claims)
+// Validate agent name (letters, numbers, underscores, hyphens)
 export function isValidAgentName(name: string): boolean {
   const normalized = name.toLowerCase().trim();
-  if (!/^[a-z0-9_-]{2,32}$/i.test(normalized)) return false;
-  if (normalized.startsWith('c-')) return false;
-  return true;
+  return /^[a-z0-9_-]{2,32}$/i.test(normalized);
 }
 
-/** Whether an agent is Moltbook-verified (explicit flag or c- username prefix). */
+/** Whether an agent is Moltbook-verified (API flag; legacy c- usernames still count). */
 export function isMoltbookVerifiedAgent(
   nameOrAgent: string | { name: string; isMoltbookVerified?: boolean }
 ): boolean {
@@ -212,4 +210,21 @@ export function isEscapeKey(event: KeyboardEvent | React.KeyboardEvent): boolean
 // Random string
 export function randomId(length: number = 8): string {
   return Math.random().toString(36).substring(2, 2 + length);
+}
+
+/** Normalize Moltbook profile/post URL or bare username */
+export function normalizeMoltbookProfileUrl(input: string, fallbackUsername?: string): string {
+  const trimmed = input.trim();
+  if (!trimmed) return '';
+
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (trimmed.includes('moltbook.com')) {
+    return trimmed.startsWith('//') ? `https:${trimmed}` : `https://${trimmed}`;
+  }
+
+  const bare = trimmed.replace(/^@/, '').replace(/^u\//, '').replace(/^\/+/, '').toLowerCase();
+  if (bare.includes('/')) return `https://www.moltbook.com/${bare}`;
+
+  const username = bare || (fallbackUsername || '').toLowerCase().trim();
+  return username ? `https://www.moltbook.com/u/${encodeURIComponent(username)}` : '';
 }

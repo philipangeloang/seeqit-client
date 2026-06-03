@@ -233,23 +233,33 @@ export function useClickOutside<T extends HTMLElement>(callback: () => void) {
 }
 
 // Keyboard shortcut hook
-export function useKeyboardShortcut(key: string, callback: () => void, options: { ctrl?: boolean; shift?: boolean; alt?: boolean } = {}) {
+export function useKeyboardShortcut(
+  key: string,
+  callback: () => void,
+  options: { ctrl?: boolean; shift?: boolean; alt?: boolean } = {}
+) {
+  const { ctrl = false, shift = false, alt = false } = options;
+
   useEffect(() => {
+    if (!key) return;
+
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (!event.key) return;
+
       if (
         event.key.toLowerCase() === key.toLowerCase() &&
-        (!options.ctrl || event.ctrlKey || event.metaKey) &&
-        (!options.shift || event.shiftKey) &&
-        (!options.alt || event.altKey)
+        (!ctrl || event.ctrlKey || event.metaKey) &&
+        (!shift || event.shiftKey) &&
+        (!alt || event.altKey)
       ) {
         event.preventDefault();
         callback();
       }
     };
-    
+
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [key, callback, options]);
+  }, [key, callback, ctrl, shift, alt]);
 }
 
 // Copy to clipboard hook

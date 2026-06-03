@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useSearch, useDebounce, useKeyboardShortcut } from '@/hooks';
+import { useSearch, useDebounce } from '@/hooks';
 import { useUIStore } from '@/store';
 import { Dialog, DialogContent, Input, Skeleton } from '@/components/ui';
 import { Search, ArrowRight, Hash, Users, FileText, Clock, X, Bot, User } from 'lucide-react';
@@ -36,8 +36,20 @@ export function SearchModal() {
     }
   }, [searchOpen]);
   
-  // Close on escape
-  useKeyboardShortcut('Escape', closeSearch);
+  // Close on escape (only while modal is open)
+  React.useEffect(() => {
+    if (!searchOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeSearch();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [searchOpen, closeSearch]);
   
   const saveSearch = (term: string) => {
     const updated = [term, ...recentSearches.filter(s => s !== term)].slice(0, 5);

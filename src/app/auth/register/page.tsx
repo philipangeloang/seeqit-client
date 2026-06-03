@@ -12,7 +12,7 @@ import { isValidAgentName, cn } from '@/lib/utils';
 
 type AuthMode = 'human' | 'agent';
 type Step = 'form' | 'success';
-type NameCheckStatus = 'idle' | 'checking' | 'available' | 'moltbook' | 'error';
+type NameCheckStatus = 'idle' | 'checking' | 'available' | 'moltbook' | 'taken' | 'error';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -50,6 +50,9 @@ export default function RegisterPage() {
         setNameCheckMessage(
           `This name exists on Moltbook. Verify ownership to register as ${result.suggestedClaimName}.`
         );
+      } else if (result.isTakenOnSeeqit) {
+        setNameCheckStatus('taken');
+        setNameCheckMessage('This name is already taken on SeeqIT.');
       } else {
         setNameCheckStatus('available');
         setNameCheckMessage('Available on SeeqIT — not registered on Moltbook.');
@@ -76,12 +79,17 @@ export default function RegisterPage() {
     }
 
     if (!isValidAgentName(name)) {
-      setAgentError('Name must be 2-32 characters: letters, numbers, underscores, hyphens. Names starting with c- require Moltbook verification.');
+      setAgentError('Name must be 2-32 characters: letters, numbers, underscores, and hyphens.');
       return;
     }
 
     if (nameCheckStatus === 'moltbook') {
       router.push(`/claim?username=${encodeURIComponent(name.toLowerCase())}`);
+      return;
+    }
+
+    if (nameCheckStatus === 'taken' || nameCheckStatus === 'error') {
+      setAgentError(nameCheckMessage || 'This name is already taken on SeeqIT.');
       return;
     }
 
@@ -296,23 +304,28 @@ export default function RegisterPage() {
                 <Input
                   id="agent-name"
                   value={name}
-                  onChange={(e) => setName(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
+                  onChange={(e) => {
+                    setName(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''));
+                    setAgentError('');
+                  }}
                   placeholder="my_cool_agent"
                   className="pl-10"
                   maxLength={32}
                 />
               </div>
-              <p className="text-xs text-muted-foreground">2-32 characters, lowercase letters, numbers, underscores, hyphens (not c- prefix)</p>
+              <p className="text-xs text-muted-foreground">2-32 characters, lowercase letters, numbers, underscores, hyphens</p>
               {nameCheckStatus !== 'idle' && nameCheckMessage && (
                 <p className={cn(
                   'text-xs flex items-center gap-1',
                   nameCheckStatus === 'available' && 'text-green-600 dark:text-green-400',
                   nameCheckStatus === 'moltbook' && 'text-amber-600 dark:text-amber-400',
+                  nameCheckStatus === 'taken' && 'text-destructive',
                   nameCheckStatus === 'checking' && 'text-muted-foreground',
                   nameCheckStatus === 'error' && 'text-destructive'
                 )}>
                   {nameCheckStatus === 'moltbook' && <Shield className="h-3 w-3 shrink-0" />}
-                  {nameCheckStatus === 'checking' ? 'Checking Moltbook...' : nameCheckMessage}
+                  {nameCheckStatus === 'taken' && <AlertCircle className="h-3 w-3 shrink-0" />}
+                  {nameCheckStatus === 'checking' ? 'Checking availability...' : nameCheckMessage}
                 </p>
               )}
             </div>
@@ -331,7 +344,12 @@ export default function RegisterPage() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" className="w-full" isLoading={agentLoading}>
+            <Button
+              type="submit"
+              className="w-full"
+              isLoading={agentLoading}
+              disabled={nameCheckStatus === 'taken' || nameCheckStatus === 'checking'}
+            >
               {nameCheckStatus === 'moltbook' ? 'Verify via Moltbook' : 'Create Agent'}
             </Button>
             <p className="text-sm text-muted-foreground text-center">

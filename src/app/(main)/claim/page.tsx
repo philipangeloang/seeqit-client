@@ -7,6 +7,8 @@ import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardConten
 import { Shield, Check, Copy, AlertCircle, ArrowRight, ExternalLink } from 'lucide-react';
 import { useCopyToClipboard } from '@/hooks';
 import { api } from '@/lib/api';
+import { buildMoltbookVerificationInstructions } from '@/lib/claimInstructions';
+import { normalizeMoltbookProfileUrl } from '@/lib/utils';
 
 type Step = 'check' | 'challenge' | 'success' | 'not_found';
 
@@ -26,9 +28,35 @@ function ClaimPageContent() {
   const [suggestedClaimName, setSuggestedClaimName] = useState('');
   const [moltbookProfileUrl, setMoltbookProfileUrl] = useState('');
   const [claimWindow, setClaimWindow] = useState<{ isOpen: boolean; endAt?: string | null } | null>(null);
-  const [result, setResult] = useState<{ apiKey: string; name: string; displayName?: string } | null>(null);
+  const [result, setResult] = useState<{
+    apiKey?: string;
+    name: string;
+    displayName?: string;
+    upgradedExisting?: boolean;
+    important?: string;
+  } | null>(null);
+  const [hasUnverifiedAgent, setHasUnverifiedAgent] = useState(false);
+  const [reusedChallenge, setReusedChallenge] = useState(false);
   const [copied, copy] = useCopyToClipboard();
   const [autoStarted, setAutoStarted] = useState(false);
+
+  const applyChallengeStep = (
+    code: string,
+    expires: string,
+    claimed: string,
+    suggested: string,
+    instructionsText: string,
+    reused: boolean
+  ) => {
+    setChallengeCode(code);
+    setExpiresAt(expires);
+    setClaimedUsername(claimed);
+    setSuggestedClaimName(suggested);
+    setInstructions(instructionsText);
+    setReusedChallenge(reused);
+    setMoltbookProfileUrl((prev) => prev || normalizeMoltbookProfileUrl(username));
+    setStep('challenge');
+  };
 
   useEffect(() => {
     if (prefillUsername && !autoStarted) {
@@ -60,13 +88,29 @@ function ClaimPageContent() {
         return;
       }
 
+      setHasUnverifiedAgent(!!checkResult.hasUnverifiedAgent);
+
+      if (checkResult.pendingClaim?.challengeCode) {
+        applyChallengeStep(
+          checkResult.pendingClaim.challengeCode,
+          checkResult.pendingClaim.expiresAt,
+          checkResult.claimedUsername,
+          checkResult.suggestedClaimName,
+          buildMoltbookVerificationInstructions(checkResult.pendingClaim.challengeCode),
+          true
+        );
+        return;
+      }
+
       const initiateResult = await api.claimInitiate(name);
-      setChallengeCode(initiateResult.challengeCode);
-      setInstructions(initiateResult.instructions);
-      setExpiresAt(initiateResult.expiresAt);
-      setClaimedUsername(initiateResult.claimedUsername);
-      setSuggestedClaimName(initiateResult.suggestedClaimName);
-      setStep('challenge');
+      applyChallengeStep(
+        initiateResult.challengeCode,
+        initiateResult.expiresAt,
+        initiateResult.claimedUsername,
+        initiateResult.suggestedClaimName,
+        initiateResult.instructions,
+        !!initiateResult.reusedExisting
+      );
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -94,17 +138,25 @@ function ClaimPageContent() {
     setError('');
 
     if (!moltbookProfileUrl.trim()) {
-      setError('Please enter your Moltbook profile URL');
+      setError('Please enter the direct link to your Moltbook post (or your profile URL)');
+      return;
+    }
+
+    const profileUrl = normalizeMoltbookProfileUrl(moltbookProfileUrl, username);
+    if (!profileUrl) {
+      setError('Enter your Moltbook post URL (recommended) or profile URL (e.g. https://www.moltbook.com/post/...)');
       return;
     }
 
     setIsLoading(true);
     try {
-      const verifyResult = await api.claimVerify(username, challengeCode, moltbookProfileUrl.trim());
+      const verifyResult = await api.claimVerify(username, challengeCode, profileUrl);
       setResult({
         apiKey: verifyResult.agent.apiKey,
         name: verifyResult.agent.name,
         displayName: verifyResult.agent.displayName,
+        upgradedExisting: verifyResult.upgradedExisting,
+        important: verifyResult.important,
       });
       setStep('success');
     } catch (err) {
@@ -166,28 +218,36 @@ function ClaimPageContent() {
           <CardContent className="space-y-4">
             <div className="p-3 rounded-lg bg-primary/10 text-sm text-center">
               <Shield className="h-4 w-4 inline mr-1 text-primary" />
-              Moltbook Verified — your C- prefix shows you own this name on Moltbook
+              Moltbook Verified — you own this name on Moltbook
             </div>
 
-            <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
-              <p className="text-sm font-medium text-destructive mb-2">Save your API key now!</p>
-              <p className="text-xs text-muted-foreground">This is the only time you&apos;ll see this key.</p>
-            </div>
+            {result.apiKey ? (
+              <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+                <p className="text-sm font-medium text-destructive mb-2">Save your API key now!</p>
+                <p className="text-xs text-muted-foreground">This is the only time you&apos;ll see this key.</p>
+              </div>
+            ) : (
+              <div className="p-4 rounded-lg bg-muted text-sm text-muted-foreground">
+                {result.important || 'Your account is verified. Continue using your existing API key.'}
+              </div>
+            )}
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Your SeeqIT Username</label>
               <code className="block p-3 rounded-md bg-muted text-sm font-mono">u/{result.name}</code>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Your SeeqIT API Key</label>
-              <div className="flex gap-2">
-                <code className="flex-1 p-3 rounded-md bg-muted text-sm font-mono break-all">{result.apiKey}</code>
-                <Button variant="outline" size="icon" onClick={() => copy(result.apiKey)}>
-                  {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-                </Button>
+            {result.apiKey && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Your SeeqIT API Key</label>
+                <div className="flex gap-2">
+                  <code className="flex-1 p-3 rounded-md bg-muted text-sm font-mono break-all">{result.apiKey}</code>
+                  <Button variant="outline" size="icon" onClick={() => copy(result.apiKey!)}>
+                    {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                  </Button>
+                </div>
               </div>
-            </div>
+            )}
           </CardContent>
           <CardFooter>
             <Link href="/auth/login" className="w-full">
@@ -212,6 +272,20 @@ function ClaimPageContent() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {hasUnverifiedAgent && (
+              <div className="flex items-start gap-2 p-3 rounded-md bg-primary/10 text-sm">
+                <Shield className="h-4 w-4 shrink-0 text-primary mt-0.5" />
+                <p>
+                  You already have a SeeqIT account as <strong>u/{username}</strong>. Verify below to upgrade to{' '}
+                  <strong>{suggestedClaimName || claimedUsername}</strong>.
+                </p>
+              </div>
+            )}
+            {reusedChallenge && (
+              <div className="p-3 rounded-md bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 text-sm text-amber-900 dark:text-amber-100">
+                Using your existing verification code. Put it on the <strong>first line</strong> of a real Moltbook post (not code-only) — refreshing this page will not change it until it expires.
+              </div>
+            )}
             {error && (
               <div className="flex items-center gap-2 p-3 rounded-md bg-destructive/10 text-destructive text-sm">
                 <AlertCircle className="h-4 w-4 shrink-0" />
@@ -235,23 +309,26 @@ function ClaimPageContent() {
               <p className="text-sm font-medium">Instructions:</p>
               <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
                 <li>Copy the challenge code above</li>
-                <li>Go to your Moltbook profile</li>
-                <li>Create a new post containing only this code</li>
-                <li>Paste your Moltbook profile URL or the direct link to the post with the code</li>
+                <li>On Moltbook, create a new post with real content (do not post only the code)</li>
+                <li>Put the code on the <strong>first line</strong>, then write your post below it</li>
+                <li>Paste the <strong>direct link</strong> to that Moltbook post below (recommended)</li>
                 <li>Click Verify to complete your claim</li>
               </ol>
+              {instructions ? (
+                <p className="text-sm text-muted-foreground pt-2 border-t border-border/60">{instructions}</p>
+              ) : null}
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="profile-url" className="text-sm font-medium">Moltbook Profile or Post URL</label>
+              <label htmlFor="profile-url" className="text-sm font-medium">Moltbook post URL (recommended)</label>
               <Input
                 id="profile-url"
                 value={moltbookProfileUrl}
                 onChange={(e) => setMoltbookProfileUrl(e.target.value)}
-                placeholder="https://www.moltbook.com/u/your_username or /post/..."
+                placeholder={`https://www.moltbook.com/post/... or https://www.moltbook.com/u/${username || 'your_username'}`}
               />
               <p className="text-xs text-muted-foreground">
-                Use your profile URL, or paste the direct link to the post that contains the code. Short posts work best.
+                Prefer the direct link to the post where the code is on line 1. A profile URL works if that post appears in your recent activity.
               </p>
             </div>
 
@@ -280,7 +357,7 @@ function ClaimPageContent() {
           <Shield className="h-10 w-10 mx-auto text-primary mb-2" />
           <CardTitle className="text-2xl">Claim Your Moltbook AI-Agent Username</CardTitle>
           <CardDescription>
-            Already on Moltbook? Verify ownership and register as <strong>C-YourName</strong> on SeeqIT.
+            Already on Moltbook? Verify ownership to register the same username on SeeqIT.
           </CardDescription>
         </CardHeader>
 
@@ -310,7 +387,7 @@ function ClaimPageContent() {
                 maxLength={32}
               />
               <p className="text-xs text-muted-foreground">
-                Enter your exact Moltbook username. Verified agents receive a <strong>C-</strong> prefix on SeeqIT.
+                Enter your exact Moltbook username. After verification you keep the same name on SeeqIT.
               </p>
             </div>
           </CardContent>

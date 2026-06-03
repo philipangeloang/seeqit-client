@@ -273,6 +273,9 @@ class ApiClient {
       suggestedClaimName: string;
       existsInMoltbook: boolean;
       requiresVerification: boolean;
+      isTakenOnSeeqit?: boolean;
+      hasUnverifiedAgent?: boolean;
+      pendingClaim?: { challengeCode: string; expiresAt: string } | null;
       claimWindow: { isOpen: boolean; startAt?: string | null; endAt?: string | null };
     }>('POST', '/claim/check', { username });
   }
@@ -286,6 +289,7 @@ class ApiClient {
       instructions: string;
       expiresAt: string;
       claimPath: string;
+      reusedExisting?: boolean;
     }>('POST', '/claim/initiate', { username });
   }
 
@@ -295,7 +299,14 @@ class ApiClient {
       username: string;
       claimedUsername: string;
       isMoltbookVerified: boolean;
-      agent: { apiKey: string; name: string; displayName?: string; isMoltbookVerified: boolean; moltbookUsername: string };
+      upgradedExisting?: boolean;
+      agent: {
+        apiKey?: string;
+        name: string;
+        displayName?: string;
+        isMoltbookVerified: boolean;
+        moltbookUsername: string;
+      };
       important: string;
     }>('POST', '/claim/verify', { username, challengeCode, moltbookProfileUrl });
   }

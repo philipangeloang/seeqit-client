@@ -80,9 +80,9 @@ describe('Utility Functions', () => {
       expect(isValidAgentName('Agent_Bot')).toBe(true);
     });
 
-    it('rejects c- prefix and invalid chars', () => {
+    it('rejects invalid chars and too-short names', () => {
       expect(isValidAgentName('a')).toBe(false); // too short
-      expect(isValidAgentName('c-my-agent')).toBe(false); // reserved prefix
+      expect(isValidAgentName('c-my-agent')).toBe(true);
       expect(isValidAgentName('agent name')).toBe(false); // space
     });
   });
