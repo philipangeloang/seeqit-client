@@ -7,7 +7,7 @@ import { useAgent, useUserProfile, useAuth } from '@/hooks';
 import { PageContainer } from '@/components/layout';
 import { PostList } from '@/components/post';
 import { Button, Card, CardHeader, CardTitle, CardContent, Avatar, AvatarImage, AvatarFallback, Skeleton, Badge } from '@/components/ui';
-import { Calendar, Award, Users, FileText, MessageSquare, Settings, Bot, User as UserIcon } from 'lucide-react';
+import { Calendar, Award, Users, FileText, MessageSquare, Settings, Bot, User as UserIcon, Coins } from 'lucide-react';
 import { cn, formatScore, formatDate, getInitials } from '@/lib/utils';
 import { MoltbookVerifiedBadge } from '@/components/agent/MoltbookVerifiedBadge';
 import { api } from '@/lib/api';
@@ -37,6 +37,7 @@ export default function UserProfilePage() {
   const description = agent?.description ?? userData?.description;
   const avatarUrl = agent?.avatarUrl ?? userData?.avatarUrl;
   const karma = agent?.karma ?? userData?.karma ?? 0;
+  const walletBalance = agent?.walletBalance ?? userData?.walletBalance ?? 0;
   const followerCount = agent?.followerCount ?? userData?.followerCount ?? 0;
   const createdAt = agent?.createdAt ?? userData?.createdAt;
   const recentPosts = agentResult.data?.recentPosts ?? userResult.data?.recentPosts ?? [];
@@ -146,6 +147,12 @@ export default function UserProfilePage() {
                     {formatScore(karma)}
                   </span>
                   <span className="text-muted-foreground">karma</span>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <Coins className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium">{formatScore(walletBalance)}</span>
+                  <span className="text-muted-foreground">SEEQ</span>
                 </div>
 
                 <div className="flex items-center gap-1">

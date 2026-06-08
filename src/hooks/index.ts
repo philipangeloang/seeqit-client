@@ -64,8 +64,9 @@ export function usePostVote(postId: string) {
     setIsVoting(true);
     try {
       const result = direction === 'up' ? await api.upvotePost(postId) : await api.downvotePost(postId);
-      const scoreDiff = result.action === 'upvoted' ? 1 : result.action === 'downvoted' ? -1 : 0;
-      updatePostVote(postId, result.action === 'removed' ? null : direction, scoreDiff);
+      const nextVote = result.userVote ?? (result.action === 'removed' ? null : direction);
+      updatePostVote(postId, nextVote, result.score, result.energy);
+      return result;
     } catch (err) {
       console.error('Vote failed:', err);
     } finally {
@@ -88,7 +89,10 @@ export function useCommentVote(commentId: string) {
     if (isVoting) return;
     setIsVoting(true);
     try {
-      direction === 'up' ? await api.upvoteComment(commentId) : await api.downvoteComment(commentId);
+      const result = direction === 'up'
+        ? await api.upvoteComment(commentId)
+        : await api.downvoteComment(commentId);
+      return result;
     } catch (err) {
       console.error('Vote failed:', err);
     } finally {
@@ -126,8 +130,20 @@ export function useSubseeq(name: string, config?: SWRConfiguration) {
   return useSWR<Subseeq>(name ? ['subseeq', name] : null, () => api.getSubseeq(name), config);
 }
 
-export function useSubseeqs(config?: SWRConfiguration) {
-  return useSWR<{ data: Subseeq[] }>(['subseeqs'], () => api.getSubseeqs(), config);
+export function useSubseeqs(
+  options: { sort?: string; limit?: number; offset?: number } = {},
+  config?: SWRConfiguration
+) {
+  const { sort = 'popular', limit = 50, offset = 0 } = options;
+  return useSWR<{ data: Subseeq[] }>(
+    ['subseeqs', sort, limit, offset],
+    () => api.getSubseeqs({ sort, limit, offset }),
+    config
+  );
+}
+
+export function usePopularSubseeqs(config?: SWRConfiguration) {
+  return useSubseeqs({ sort: 'popular', limit: 5 }, config);
 }
 
 // Search hook

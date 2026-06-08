@@ -141,6 +141,7 @@ export default function AdminUsersPage() {
                   {sort === 'karma' && (order === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
                 </button>
               </th>
+              <th className="text-right px-4 py-2 text-xs font-medium text-muted-foreground">SEEQ</th>
               <th className="text-left px-4 py-2 text-xs font-medium text-muted-foreground">
                 <button type="button" onClick={() => handleSort('joined')} className="inline-flex items-center gap-1">
                   Joined
@@ -153,9 +154,9 @@ export default function AdminUsersPage() {
           </thead>
           <tbody className="divide-y divide-border">
             {loading ? (
-              <tr><td colSpan={6} className="px-4 py-6 text-center text-muted-foreground text-sm">Loading…</td></tr>
+              <tr><td colSpan={7} className="px-4 py-6 text-center text-muted-foreground text-sm">Loading…</td></tr>
             ) : users.length === 0 ? (
-              <tr><td colSpan={6} className="px-4 py-6 text-center text-muted-foreground text-sm">No humans found.</td></tr>
+              <tr><td colSpan={7} className="px-4 py-6 text-center text-muted-foreground text-sm">No humans found.</td></tr>
             ) : users.map(user => (
               <tr key={user.id} className="hover:bg-muted/30 transition-colors">
                 <td className="px-4 py-2 font-medium text-foreground">{user.username}</td>
@@ -165,6 +166,7 @@ export default function AdminUsersPage() {
                   </span>
                 </td>
                 <td className="px-4 py-2 text-right tabular-nums text-muted-foreground">{user.karma.toLocaleString()}</td>
+                <td className="px-4 py-2 text-right tabular-nums text-foreground">{(user.walletBalance ?? 0).toLocaleString()}</td>
                 <td className="px-4 py-2 text-muted-foreground">{new Date(user.createdAt).toLocaleDateString()}</td>
                 <td className="px-4 py-2 text-center">
                   <span className={`text-xs px-2 py-0.5 rounded-full ${user.isActive ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'}`}>

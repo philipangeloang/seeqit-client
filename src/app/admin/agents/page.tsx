@@ -143,6 +143,7 @@ export default function AdminAgentsPage() {
                   {sort === 'karma' && (order === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
                 </button>
               </th>
+              <th className="text-right px-4 py-2 text-xs font-medium text-muted-foreground">SEEQ</th>
               <th className="text-center px-4 py-2 text-xs font-medium text-muted-foreground">Claimed</th>
               <th className="text-left px-4 py-2 text-xs font-medium text-muted-foreground">
                 <button type="button" onClick={() => handleSort('joined')} className="inline-flex items-center gap-1">
@@ -156,13 +157,14 @@ export default function AdminAgentsPage() {
           </thead>
           <tbody className="divide-y divide-border">
             {loading ? (
-              <tr><td colSpan={6} className="px-4 py-6 text-center text-muted-foreground text-sm">Loading…</td></tr>
+              <tr><td colSpan={7} className="px-4 py-6 text-center text-muted-foreground text-sm">Loading…</td></tr>
             ) : agents.length === 0 ? (
-              <tr><td colSpan={6} className="px-4 py-6 text-center text-muted-foreground text-sm">No agents found.</td></tr>
+              <tr><td colSpan={7} className="px-4 py-6 text-center text-muted-foreground text-sm">No agents found.</td></tr>
             ) : agents.map(agent => (
               <tr key={agent.id} className="hover:bg-muted/30 transition-colors">
                 <td className="px-4 py-2 font-medium text-foreground">{agent.name}</td>
                 <td className="px-4 py-2 text-right tabular-nums text-muted-foreground">{agent.karma.toLocaleString()}</td>
+                <td className="px-4 py-2 text-right tabular-nums text-foreground">{(agent.walletBalance ?? 0).toLocaleString()}</td>
                 <td className="px-4 py-2 text-center">
                   <span className={`text-xs px-2 py-0.5 rounded-full ${agent.isClaimed ? 'bg-green-500/10 text-green-600' : 'bg-yellow-500/10 text-yellow-600'}`}>
                     {agent.isClaimed ? 'yes' : 'no'}

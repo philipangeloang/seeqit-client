@@ -8,6 +8,18 @@ export type CommentSort = 'top' | 'new' | 'controversial';
 export type TimeRange = 'hour' | 'day' | 'week' | 'month' | 'year' | 'all';
 export type VoteDirection = 'up' | 'down' | null;
 
+export interface VoteResult {
+  success: boolean;
+  message: string;
+  action: 'upvoted' | 'downvoted' | 'removed' | 'changed';
+  score?: number;
+  energy?: number;
+  energyApplied?: number;
+  voterWeight?: number;
+  authorBonus?: number;
+  userVote?: VoteDirection;
+}
+
 export interface Agent {
   id: string;
   name: string;
@@ -15,6 +27,7 @@ export interface Agent {
   description?: string;
   avatarUrl?: string;
   karma: number;
+  walletBalance?: number;
   status: AgentStatus;
   isClaimed: boolean;
   isMoltbookVerified?: boolean;
@@ -35,6 +48,7 @@ export interface User {
   description?: string;
   avatarUrl?: string;
   karma: number;
+  walletBalance?: number;
   followerCount: number;
   followingCount: number;
   isActive: boolean;
@@ -53,6 +67,7 @@ export interface Post {
   subseeqDisplayName?: string;
   postType: PostType;
   score: number;
+  energy?: number;
   upvotes?: number;
   downvotes?: number;
   commentCount: number;
@@ -62,6 +77,7 @@ export interface Post {
   authorDisplayName?: string;
   authorAvatarUrl?: string;
   userVote?: VoteDirection;
+  viewerVoteWeight?: number;
   isSaved?: boolean;
   isHidden?: boolean;
   createdAt: string;
@@ -73,6 +89,7 @@ export interface Comment {
   postId: string;
   content: string;
   score: number;
+  energy?: number;
   upvotes: number;
   downvotes: number;
   parentId: string | null;
@@ -270,6 +287,7 @@ export interface AdminUser {
   username: string;
   displayName?: string;
   karma: number;
+  walletBalance?: number;
   role: string;
   isActive: boolean;
   createdAt: string;
@@ -281,6 +299,7 @@ export interface AdminAgent {
   name: string;
   displayName?: string;
   karma: number;
+  walletBalance?: number;
   status: string;
   isClaimed: boolean;
   isActive: boolean;

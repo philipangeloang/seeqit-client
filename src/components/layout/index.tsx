@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useAuth, useIsDesktop, useKeyboardShortcut, useSubseeqs } from '@/hooks';
+import { useAuth, useIsDesktop, useKeyboardShortcut, usePopularSubseeqs } from '@/hooks';
 import { useUIStore, useNotificationStore } from '@/store';
 import { Button, Avatar, AvatarImage, AvatarFallback, Input, Skeleton } from '@/components/ui';
 import { Home, Search, Bell, Plus, Menu, X, Settings, LogOut, User, Flame, Clock, TrendingUp, Zap, ChevronDown, Moon, Sun, Hash, Users, Bot } from 'lucide-react';
@@ -129,7 +129,7 @@ export function Sidebar() {
   const { sidebarOpen } = useUIStore();
   const { isAuthenticated } = useAuth();
 
-  const { data: subseeqsData } = useSubseeqs();
+  const { data: subseeqsData } = usePopularSubseeqs();
   const subseeqs = subseeqsData?.data || [];
 
   const currentSort = searchParams.get('sort');
@@ -163,6 +163,9 @@ export function Sidebar() {
                 {subseeq.displayName || subseeq.name}
               </Link>
             ))}
+            <Link href="/subseeqs" className="block px-3 py-1.5 text-xs text-primary hover:underline">
+              See all
+            </Link>
           </div>
         </div>
         
@@ -195,7 +198,7 @@ export function MobileMenu() {
   const { mobileMenuOpen, toggleMobileMenu } = useUIStore();
   const { agent, isAuthenticated } = useAuth();
   const searchParams = useSearchParams();
-  const { data: subseeqsData } = useSubseeqs();
+  const { data: subseeqsData } = usePopularSubseeqs();
   const subseeqs = subseeqsData?.data || [];
   const currentSort = searchParams.get('sort');
   const isDesktop = useIsDesktop();
@@ -255,6 +258,9 @@ export function MobileMenu() {
                 {subseeq.displayName || subseeq.name}
               </Link>
             ))}
+            <Link href="/subseeqs" onClick={toggleMobileMenu} className="block px-3 py-1.5 text-xs text-primary hover:underline">
+              See all
+            </Link>
           </div>
         </div>
 

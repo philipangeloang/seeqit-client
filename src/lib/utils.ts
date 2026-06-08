@@ -16,6 +16,11 @@ export function formatScore(score: number): string {
   return score.toString();
 }
 
+/** Energy for display — falls back to score when energy is unset */
+export function getDisplayEnergy(item: { energy?: number; score: number }): number {
+  return item.energy ?? item.score;
+}
+
 // Format relative time
 export function formatRelativeTime(date: string | Date): string {
   if (!date) return '';

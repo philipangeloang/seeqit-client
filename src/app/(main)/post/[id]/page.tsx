@@ -10,6 +10,8 @@ import { Markdown } from '@/components/markdown';
 import { Button, Card, Avatar, AvatarImage, AvatarFallback, Skeleton, Separator } from '@/components/ui';
 import { ArrowBigUp, ArrowBigDown, MessageSquare, Share2, Bookmark, MoreHorizontal, ExternalLink, ArrowLeft } from 'lucide-react';
 import { cn, formatScore, formatRelativeTime, formatDateTime, extractDomain, getInitials, getSubseeqUrl, getAgentUrl, canInteract, copyToClipboard } from '@/lib/utils';
+import { computeVoteWeight, formatVoteWeight } from '@/lib/constants';
+import { VoteCounts } from '@/components/vote/VoteCounts';
 import type { CommentSort as CommentSortType, Comment } from '@/types';
 
 export default function PostPage() {
@@ -18,7 +20,7 @@ export default function PostPage() {
   const [commentSort, setCommentSort] = useState<CommentSortType>('top');
   const { data: comments, isLoading: commentsLoading, mutate: mutateComments } = useComments(params.id, { sort: commentSort });
   const { vote, isVoting } = usePostVote(params.id);
-  const { isAuthenticated, authType } = useAuth();
+  const { isAuthenticated, authType, agent, user } = useAuth();
   const [shareCopied, setShareCopied] = useState(false);
 
   if (postError) return notFound();
@@ -27,6 +29,11 @@ export default function PostPage() {
   const isDownvoted = post?.userVote === 'down';
   const domain = post?.url ? extractDomain(post.url) : null;
   const canAct = isAuthenticated && canInteract(authType, post?.subseeq);
+  const walletBalance = agent?.walletBalance ?? user?.walletBalance ?? 0;
+  const voteWeight = post?.viewerVoteWeight ?? computeVoteWeight(walletBalance);
+  const voteWeightTitle = isAuthenticated
+    ? `Your vote weight: ${formatVoteWeight(voteWeight)} (${walletBalance} SEEQ)`
+    : 'Upvote';
 
   const handleVote = async (direction: 'up' | 'down') => {
     if (!canAct) return;
@@ -118,13 +125,11 @@ export default function PostPage() {
               {/* Actions */}
               <div className="flex items-center gap-2 pt-2 border-t">
                 <div className="flex items-center gap-1">
-                  <button onClick={() => handleVote('up')} disabled={isVoting || !canAct} className={cn('vote-btn vote-btn-up', isUpvoted && 'active')}>
+                  <button onClick={() => handleVote('up')} disabled={isVoting || !canAct} className={cn('vote-btn vote-btn-up', isUpvoted && 'active')} title={voteWeightTitle}>
                     <ArrowBigUp className={cn('h-6 w-6', isUpvoted && 'fill-current')} />
                   </button>
-                  <span className={cn('font-medium px-1', post.score > 0 && 'text-upvote', post.score < 0 && 'text-downvote')}>
-                    {formatScore(post.score)}
-                  </span>
-                  <button onClick={() => handleVote('down')} disabled={isVoting || !canAct} className={cn('vote-btn vote-btn-down', isDownvoted && 'active')}>
+                  <VoteCounts score={post.score} energy={post.energy} layout="inline" size="md" />
+                  <button onClick={() => handleVote('down')} disabled={isVoting || !canAct} className={cn('vote-btn vote-btn-down', isDownvoted && 'active')} title={voteWeightTitle}>
                     <ArrowBigDown className={cn('h-6 w-6', isDownvoted && 'fill-current')} />
                   </button>
                 </div>

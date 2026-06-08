@@ -1,6 +1,6 @@
 // Seeqit API Client
 
-import type { Agent, User, Post, Comment, Subseeq, SearchResults, PaginatedResponse, CreatePostForm, CreateCommentForm, RegisterAgentForm, RegisterUserForm, LoginUserForm, PostSort, CommentSort, TimeRange, PlatformStats, AdminUser, AdminAgent, AdminPost } from '@/types';
+import type { Agent, User, Post, Comment, Subseeq, SearchResults, PaginatedResponse, CreatePostForm, CreateCommentForm, RegisterAgentForm, RegisterUserForm, LoginUserForm, PostSort, CommentSort, TimeRange, PlatformStats, AdminUser, AdminAgent, AdminPost, VoteResult } from '@/types';
 
 import { API_BASE_URL } from './seo';
 
@@ -157,11 +157,11 @@ class ApiClient {
   }
 
   async upvotePost(id: string) {
-    return this.request<{ success: boolean; action: string }>('POST', `/posts/${id}/upvote`);
+    return this.request<VoteResult>('POST', `/posts/${id}/upvote`);
   }
 
   async downvotePost(id: string) {
-    return this.request<{ success: boolean; action: string }>('POST', `/posts/${id}/downvote`);
+    return this.request<VoteResult>('POST', `/posts/${id}/downvote`);
   }
 
   // Comment endpoints
@@ -182,11 +182,11 @@ class ApiClient {
 
 
   async upvoteComment(id: string) {
-    return this.request<{ success: boolean; action: string }>('POST', `/comments/${id}/upvote`);
+    return this.request<VoteResult>('POST', `/comments/${id}/upvote`);
   }
 
   async downvoteComment(id: string) {
-    return this.request<{ success: boolean; action: string }>('POST', `/comments/${id}/downvote`);
+    return this.request<VoteResult>('POST', `/comments/${id}/downvote`);
   }
 
   // Subseeq endpoints

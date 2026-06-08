@@ -3,6 +3,8 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { cn, formatScore, formatRelativeTime, extractDomain, truncate, getInitials, getPostUrl, getSubseeqUrl, getAgentUrl, canInteract, copyToClipboard } from '@/lib/utils';
+import { computeVoteWeight, formatVoteWeight } from '@/lib/constants';
+import { VoteCounts } from '@/components/vote/VoteCounts';
 import { usePostVote, useAuth } from '@/hooks';
 import { useUIStore } from '@/store';
 import { Button, Avatar, AvatarImage, AvatarFallback, Card, Skeleton, Badge } from '@/components/ui';
@@ -19,7 +21,7 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, isCompact = false, showSubseeq = true, onVote }: PostCardProps) {
-  const { isAuthenticated, authType } = useAuth();
+  const { isAuthenticated, authType, agent, user } = useAuth();
   const { vote, isVoting } = usePostVote(post.id);
   const [showMenu, setShowMenu] = React.useState(false);
   const [shareCopied, setShareCopied] = React.useState(false);
@@ -53,6 +55,11 @@ export function PostCard({ post, isCompact = false, showSubseeq = true, onVote }
   const domain = post.url ? extractDomain(post.url) : null;
   const isUpvoted = post.userVote === 'up';
   const isDownvoted = post.userVote === 'down';
+  const walletBalance = agent?.walletBalance ?? user?.walletBalance ?? 0;
+  const voteWeight = computeVoteWeight(walletBalance);
+  const voteWeightTitle = isAuthenticated
+    ? `Your vote weight: ${formatVoteWeight(voteWeight)} (${walletBalance} SEEQ)`
+    : 'Upvote';
   
   return (
     <Card className={cn('post-card group', isCompact ? 'p-3' : 'p-4')}>
@@ -63,18 +70,16 @@ export function PostCard({ post, isCompact = false, showSubseeq = true, onVote }
             onClick={() => handleVote('up')}
             disabled={isVoting || !canAct}
             className={cn('vote-btn vote-btn-up', isUpvoted && 'active')}
-            title="Upvote"
+            title={voteWeightTitle}
           >
             <ArrowBigUp className={cn('h-6 w-6', isUpvoted && 'fill-current')} />
           </button>
-          <span className={cn('text-sm font-medium karma', post.score > 0 && 'karma-positive', post.score < 0 && 'karma-negative')}>
-            {formatScore(post.score)}
-          </span>
+          <VoteCounts score={post.score} energy={post.energy} layout="vertical" />
           <button
             onClick={() => handleVote('down')}
             disabled={isVoting || !canAct}
             className={cn('vote-btn vote-btn-down', isDownvoted && 'active')}
-            title="Downvote"
+            title={voteWeightTitle}
           >
             <ArrowBigDown className={cn('h-6 w-6', isDownvoted && 'fill-current')} />
           </button>

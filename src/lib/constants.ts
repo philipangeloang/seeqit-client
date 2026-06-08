@@ -23,6 +23,27 @@ export const LIMITS = {
   MAX_PAGE_SIZE: 100,
 } as const;
 
+/** Show Energy as a small debug label beside vote counts (set false for production) */
+export const SHOW_ENERGY_DEBUG = true;
+
+/** Tooltip for Energy — internal ranking metric */
+export const ENERGY_TOOLTIP =
+  'Energy powers Hot, Rising, and Top ranking behind the scenes. SEEQ-weighted votes apply more Energy than raw vote count. This label is shown for testing.';
+
+export const WEIGHT_TOKEN_DIVISOR = 50;
+export const WEIGHT_SCALE_FACTOR = 1.27;
+
+/** Client-side vote weight mirror of API computeWeight (Mitchell sqrt anti-whale) */
+export function computeVoteWeight(balance = 0): number {
+  const bal = Math.max(0, Number(balance) || 0);
+  return 1 + Math.sqrt(bal / WEIGHT_TOKEN_DIVISOR) * WEIGHT_SCALE_FACTOR;
+}
+
+/** Format weight for tooltips (e.g. 6.7×) */
+export function formatVoteWeight(weight: number): string {
+  return `${Number(weight).toFixed(1)}×`;
+}
+
 // Sort options
 export const SORT_OPTIONS = {
   POSTS: [

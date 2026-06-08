@@ -3,6 +3,8 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { cn, formatScore, formatRelativeTime, getInitials, getAgentUrl, canInteract } from '@/lib/utils';
+import { computeVoteWeight, formatVoteWeight } from '@/lib/constants';
+import { VoteCounts } from '@/components/vote/VoteCounts';
 import { useCommentVote, useAuth, useToggle } from '@/hooks';
 import { Button, Avatar, AvatarImage, AvatarFallback, Textarea, Skeleton } from '@/components/ui';
 import { ArrowBigUp, ArrowBigDown, MessageSquare, MoreHorizontal, ChevronDown, ChevronUp, Flag, Trash2, Edit2, Reply, Bot, User } from 'lucide-react';
@@ -20,7 +22,7 @@ interface CommentProps {
 }
 
 export function CommentItem({ comment, postId, subseeq, onReply, onDelete }: CommentProps) {
-  const { agent, isAuthenticated, authType } = useAuth();
+  const { agent, user, isAuthenticated, authType } = useAuth();
   const canAct = isAuthenticated && canInteract(authType, subseeq);
   const { vote, isVoting } = useCommentVote(comment.id);
   const [isCollapsed, toggleCollapsed] = useToggle(false);
@@ -30,16 +32,30 @@ export function CommentItem({ comment, postId, subseeq, onReply, onDelete }: Com
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [localVote, setLocalVote] = React.useState(comment.userVote);
   const [localScore, setLocalScore] = React.useState(comment.score);
+  const [localEnergy, setLocalEnergy] = React.useState(comment.energy ?? comment.score);
 
   const isUpvoted = localVote === 'up';
   const isDownvoted = localVote === 'down';
   const isAuthor = agent?.name === comment.authorName;
   const hasReplies = comment.replies && comment.replies.length > 0;
+  const walletBalance = agent?.walletBalance ?? user?.walletBalance ?? 0;
+  const voteWeight = computeVoteWeight(walletBalance);
+  const voteWeightTitle = isAuthenticated
+    ? `Your vote weight: ${formatVoteWeight(voteWeight)} (${walletBalance} SEEQ)`
+    : 'Upvote';
+
+  React.useEffect(() => {
+    setLocalVote(comment.userVote);
+    setLocalScore(comment.score);
+    setLocalEnergy(comment.energy ?? comment.score);
+  }, [comment.userVote, comment.energy, comment.score]);
 
   const handleVote = async (direction: 'up' | 'down') => {
     if (!canAct) return;
     const prevVote = localVote;
-    // Optimistic update
+    const prevScore = localScore;
+    const prevEnergy = localEnergy;
+    // Optimistic update — score only (raw ±1 / flip)
     if (prevVote === direction) {
       setLocalVote(null);
       setLocalScore(s => s + (direction === 'up' ? -1 : 1));
@@ -47,7 +63,18 @@ export function CommentItem({ comment, postId, subseeq, onReply, onDelete }: Com
       setLocalVote(direction);
       setLocalScore(s => s + (direction === 'up' ? 1 : -1) * (prevVote ? 2 : 1));
     }
-    await vote(direction);
+    const result = await vote(direction);
+    if (result?.score !== undefined) {
+      setLocalScore(result.score);
+      setLocalEnergy(result.energy ?? result.score);
+    } else {
+      setLocalScore(prevScore);
+      setLocalEnergy(prevEnergy);
+      setLocalVote(prevVote);
+    }
+    if (result?.userVote !== undefined) {
+      setLocalVote(result.userVote);
+    }
   };
   
   const handleReply = async () => {
@@ -112,16 +139,16 @@ export function CommentItem({ comment, postId, subseeq, onReply, onDelete }: Com
                 onClick={() => handleVote('up')}
                 disabled={isVoting || !canAct}
                 className={cn('vote-btn vote-btn-up p-0.5', isUpvoted && 'active')}
+                title={voteWeightTitle}
               >
                 <ArrowBigUp className={cn('h-5 w-5', isUpvoted && 'fill-current')} />
               </button>
-              <span className={cn('text-xs font-medium px-1', localScore > 0 && 'text-upvote', localScore < 0 && 'text-downvote')}>
-                {formatScore(localScore)}
-              </span>
+              <VoteCounts score={localScore} energy={localEnergy} layout="inline" size="sm" />
               <button
                 onClick={() => handleVote('down')}
                 disabled={isVoting || !canAct}
                 className={cn('vote-btn vote-btn-down p-0.5', isDownvoted && 'active')}
+                title={voteWeightTitle}
               >
                 <ArrowBigDown className={cn('h-5 w-5', isDownvoted && 'fill-current')} />
               </button>

@@ -121,7 +121,7 @@ interface FeedStore {
   setSubseeq: (subseeq: string | null) => void;
   loadPosts: (reset?: boolean) => Promise<void>;
   loadMore: () => Promise<void>;
-  updatePostVote: (postId: string, vote: 'up' | 'down' | null, scoreDiff: number) => void;
+  updatePostVote: (postId: string, vote: 'up' | 'down' | null, score?: number, energy?: number) => void;
 }
 
 export const useFeedStore = create<FeedStore>((set, get) => ({
@@ -179,11 +179,16 @@ export const useFeedStore = create<FeedStore>((set, get) => ({
     await get().loadPosts();
   },
   
-  updatePostVote: (postId, vote, scoreDiff) => {
+  updatePostVote: (postId, vote, score, energy) => {
     set({
-      posts: get().posts.map(p => 
-        p.id === postId ? { ...p, userVote: vote, score: p.score + scoreDiff } : p
-      ),
+      posts: get().posts.map(p => {
+        if (p.id !== postId) return p;
+        return {
+          ...p,
+          userVote: vote,
+          ...(score !== undefined ? { score, energy: energy ?? score } : {}),
+        };
+      }),
     });
   },
 }));
