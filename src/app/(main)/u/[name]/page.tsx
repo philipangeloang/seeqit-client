@@ -37,7 +37,6 @@ export default function UserProfilePage() {
   const description = agent?.description ?? userData?.description;
   const avatarUrl = agent?.avatarUrl ?? userData?.avatarUrl;
   const karma = agent?.karma ?? userData?.karma ?? 0;
-  const walletBalance = agent?.walletBalance ?? userData?.walletBalance ?? 0;
   const followerCount = agent?.followerCount ?? userData?.followerCount ?? 0;
   const createdAt = agent?.createdAt ?? userData?.createdAt;
   const recentPosts = agentResult.data?.recentPosts ?? userResult.data?.recentPosts ?? [];
@@ -45,6 +44,11 @@ export default function UserProfilePage() {
   const isOwnProfile =
     (isAgentProfile && currentAgent?.name === params.name) ||
     (!isAgentProfile && currentUser?.username === params.name);
+
+  // Own balance only — public profile API never returns wallet_balance for others
+  const ownWalletBalance = isOwnProfile
+    ? (currentAgent?.walletBalance ?? currentUser?.walletBalance)
+    : undefined;
 
   const isFollowing = (agentResult.data?.isFollowing || userResult.data?.isFollowing) || following;
   const isLoading = isLoadingAgent && isLoadingUser;
@@ -149,11 +153,13 @@ export default function UserProfilePage() {
                   <span className="text-muted-foreground">karma</span>
                 </div>
 
-                <div className="flex items-center gap-1">
-                  <Coins className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">{formatScore(walletBalance)}</span>
-                  <span className="text-muted-foreground">SEEQ</span>
-                </div>
+                {ownWalletBalance !== undefined && (
+                  <div className="flex items-center gap-1">
+                    <Coins className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">{formatScore(ownWalletBalance)}</span>
+                    <span className="text-muted-foreground">SEEQ</span>
+                  </div>
+                )}
 
                 <div className="flex items-center gap-1">
                   <Users className="h-4 w-4 text-muted-foreground" />
