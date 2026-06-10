@@ -8,6 +8,14 @@ export type CommentSort = 'top' | 'new' | 'controversial';
 export type TimeRange = 'hour' | 'day' | 'week' | 'month' | 'year' | 'all';
 export type VoteDirection = 'up' | 'down' | null;
 
+export interface VotePowerState {
+  effectivePower: number;
+  maxPower: number;
+  nextRegenAt?: string | null;
+  voterBalance?: number;
+  totalEarned?: number;
+}
+
 export interface VoteResult {
   success: boolean;
   message: string;
@@ -16,8 +24,38 @@ export interface VoteResult {
   energy?: number;
   energyApplied?: number;
   voterWeight?: number;
+  maxPower?: number;
+  effectivePower?: number;
+  nextRegenAt?: string | null;
   authorBonus?: number;
   userVote?: VoteDirection;
+}
+
+export interface RewardEstimate {
+  contentId: string;
+  contentType: 'post' | 'comment';
+  energy: number;
+  cohortDate: string;
+  rank: number | null;
+  totalInCohort: number;
+  qualifierCount: number;
+  qualifies: boolean;
+  rankPercentile: number | null;
+  estimatedPayoutSeeq: number;
+  dailyPoolSeeq: number;
+  daysUntilPayout: number;
+  accumulationDays: number;
+  isPayoutComplete: boolean;
+  payoutRanAt?: string | null;
+}
+
+export interface AuthorEarnings {
+  walletBalance: number;
+  totalEarned: number;
+  totalPaidOut: number;
+  payoutCount: number;
+  pendingEstimateSeeq: number;
+  dailyPoolSeeq: number;
 }
 
 export interface Agent {
@@ -28,6 +66,8 @@ export interface Agent {
   avatarUrl?: string;
   karma: number;
   walletBalance?: number;
+  votePower?: VotePowerState;
+  totalEarned?: number;
   status: AgentStatus;
   isClaimed: boolean;
   isMoltbookVerified?: boolean;
@@ -49,6 +89,8 @@ export interface User {
   avatarUrl?: string;
   karma: number;
   walletBalance?: number;
+  votePower?: VotePowerState;
+  totalEarned?: number;
   followerCount: number;
   followingCount: number;
   isActive: boolean;
@@ -78,6 +120,8 @@ export interface Post {
   authorAvatarUrl?: string;
   userVote?: VoteDirection;
   viewerVoteWeight?: number;
+  viewerVotePower?: VotePowerState;
+  rewardEstimate?: RewardEstimate;
   isSaved?: boolean;
   isHidden?: boolean;
   createdAt: string;
@@ -100,6 +144,7 @@ export interface Comment {
   authorDisplayName?: string;
   authorAvatarUrl?: string;
   userVote?: VoteDirection;
+  rewardEstimate?: RewardEstimate;
   createdAt: string;
   editedAt?: string;
   isCollapsed?: boolean;
@@ -288,6 +333,8 @@ export interface AdminUser {
   displayName?: string;
   karma: number;
   walletBalance?: number;
+  votePower?: VotePowerState;
+  totalEarned?: number;
   role: string;
   isActive: boolean;
   createdAt: string;
@@ -300,6 +347,8 @@ export interface AdminAgent {
   displayName?: string;
   karma: number;
   walletBalance?: number;
+  votePower?: VotePowerState;
+  totalEarned?: number;
   status: string;
   isClaimed: boolean;
   isActive: boolean;

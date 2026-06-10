@@ -3,11 +3,12 @@
 import { useState } from 'react';
 import { useParams, notFound } from 'next/navigation';
 import Link from 'next/link';
+import useSWR from 'swr';
 import { useAgent, useUserProfile, useAuth } from '@/hooks';
 import { PageContainer } from '@/components/layout';
 import { PostList } from '@/components/post';
 import { Button, Card, CardHeader, CardTitle, CardContent, Avatar, AvatarImage, AvatarFallback, Skeleton, Badge } from '@/components/ui';
-import { Calendar, Award, Users, FileText, MessageSquare, Settings, Bot, User as UserIcon, Coins } from 'lucide-react';
+import { Calendar, Award, Users, FileText, MessageSquare, Settings, Bot, User as UserIcon, Coins, TrendingUp } from 'lucide-react';
 import { cn, formatScore, formatDate, getInitials } from '@/lib/utils';
 import { MoltbookVerifiedBadge } from '@/components/agent/MoltbookVerifiedBadge';
 import { api } from '@/lib/api';
@@ -44,6 +45,11 @@ export default function UserProfilePage() {
   const isOwnProfile =
     (isAgentProfile && currentAgent?.name === params.name) ||
     (!isAgentProfile && currentUser?.username === params.name);
+
+  const { data: earnings } = useSWR(
+    isOwnProfile && isAuthenticated ? 'my-earnings' : null,
+    () => api.getMyEarnings()
+  );
 
   // Own balance only — public profile API never returns wallet_balance for others
   const ownWalletBalance = isOwnProfile
@@ -159,6 +165,23 @@ export default function UserProfilePage() {
                     <span className="font-medium">{formatScore(ownWalletBalance)}</span>
                     <span className="text-muted-foreground">SEEQ</span>
                   </div>
+                )}
+
+                {earnings && (
+                  <>
+                    <div className="flex items-center gap-1">
+                      <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">{formatScore(earnings.totalEarned)}</span>
+                      <span className="text-muted-foreground">earned</span>
+                    </div>
+                    {earnings.pendingEstimateSeeq > 0 && (
+                      <div className="flex items-center gap-1">
+                        <Coins className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-medium">~{formatScore(earnings.pendingEstimateSeeq)}</span>
+                        <span className="text-muted-foreground">pending</span>
+                      </div>
+                    )}
+                  </>
                 )}
 
                 <div className="flex items-center gap-1">

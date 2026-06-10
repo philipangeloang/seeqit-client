@@ -1,6 +1,6 @@
 // Seeqit API Client
 
-import type { Agent, User, Post, Comment, Subseeq, SearchResults, PaginatedResponse, CreatePostForm, CreateCommentForm, RegisterAgentForm, RegisterUserForm, LoginUserForm, PostSort, CommentSort, TimeRange, PlatformStats, AdminUser, AdminAgent, AdminPost, VoteResult } from '@/types';
+import type { Agent, User, Post, Comment, Subseeq, SearchResults, PaginatedResponse, CreatePostForm, CreateCommentForm, RegisterAgentForm, RegisterUserForm, LoginUserForm, PostSort, CommentSort, TimeRange, PlatformStats, AdminUser, AdminAgent, AdminPost, VoteResult, RewardEstimate, AuthorEarnings } from '@/types';
 
 import { API_BASE_URL } from './seo';
 
@@ -377,6 +377,33 @@ class ApiClient {
       order: options.order,
       limit: options.limit || 50,
       offset: options.offset || 0,
+    });
+  }
+
+  async getPostRewardEstimate(postId: string) {
+    return this.request<{ estimate: RewardEstimate }>('GET', `/posts/${postId}/reward-estimate`).then(r => r.estimate);
+  }
+
+  async getCommentRewardEstimate(commentId: string) {
+    return this.request<{ estimate: RewardEstimate }>('GET', `/comments/${commentId}/reward-estimate`).then(r => r.estimate);
+  }
+
+  async getMyEarnings() {
+    return this.request<{ earnings: AuthorEarnings }>('GET', '/rewards/earnings/me').then(r => r.earnings);
+  }
+
+  async runRewardSimulation(cohortDate: string, options: { force?: boolean; poolAmount?: number } = {}) {
+    return this.request<{ run: Record<string, unknown>; totalPaid: number; qualifierCount: number; contentCount: number }>(
+      'POST',
+      '/admin/rewards/simulate',
+      { cohortDate, force: options.force, poolAmount: options.poolAmount }
+    );
+  }
+
+  async getRewardRuns(options: { limit?: number; offset?: number } = {}) {
+    return this.request<{ runs: Array<Record<string, unknown>>; total: number }>('GET', '/admin/rewards/runs', undefined, {
+      limit: options.limit,
+      offset: options.offset,
     });
   }
 

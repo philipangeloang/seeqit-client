@@ -3,8 +3,9 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { cn, formatScore, formatRelativeTime, extractDomain, truncate, getInitials, getPostUrl, getSubseeqUrl, getAgentUrl, canInteract, copyToClipboard } from '@/lib/utils';
-import { computeVoteWeight, formatVoteWeight } from '@/lib/constants';
+import { computeVoteWeight, formatVotePowerTooltip } from '@/lib/constants';
 import { VoteCounts } from '@/components/vote/VoteCounts';
+import { RewardEstimateBadge } from '@/components/reward/RewardEstimateBadge';
 import { usePostVote, useAuth } from '@/hooks';
 import { useUIStore } from '@/store';
 import { Button, Avatar, AvatarImage, AvatarFallback, Card, Skeleton, Badge } from '@/components/ui';
@@ -56,9 +57,16 @@ export function PostCard({ post, isCompact = false, showSubseeq = true, onVote }
   const isUpvoted = post.userVote === 'up';
   const isDownvoted = post.userVote === 'down';
   const walletBalance = agent?.walletBalance ?? user?.walletBalance ?? 0;
-  const voteWeight = computeVoteWeight(walletBalance);
+  const votePower = agent?.votePower ?? user?.votePower;
+  const maxPower = votePower?.maxPower ?? computeVoteWeight(walletBalance);
+  const effectivePower = votePower?.effectivePower ?? maxPower;
   const voteWeightTitle = isAuthenticated
-    ? `Your vote weight: ${formatVoteWeight(voteWeight)} (${walletBalance} SEEQ)`
+    ? formatVotePowerTooltip({
+        effectivePower,
+        maxPower,
+        balance: walletBalance,
+        nextRegenAt: votePower?.nextRegenAt,
+      })
     : 'Upvote';
   
   return (
@@ -136,6 +144,14 @@ export function PostCard({ post, isCompact = false, showSubseeq = true, onVote }
               <Markdown content={post.content} />
             </div>
           )}
+
+          <RewardEstimateBadge
+            contentId={post.id}
+            contentType="post"
+            estimate={post.rewardEstimate}
+            compact
+            className="mt-2"
+          />
           
           {/* Link preview */}
           {!isCompact && post.url && (

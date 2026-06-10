@@ -44,6 +44,28 @@ export function formatVoteWeight(weight: number): string {
   return `${Number(weight).toFixed(1)}×`;
 }
 
+/** Voting power tooltip with optional regen countdown */
+export function formatVotePowerTooltip(options: {
+  effectivePower: number;
+  maxPower: number;
+  balance?: number;
+  nextRegenAt?: string | null;
+}): string {
+  const { effectivePower, maxPower, balance = 0, nextRegenAt } = options;
+  const powerLine = `Power: ${Number(effectivePower).toFixed(1)} / ${Number(maxPower).toFixed(1)}`;
+  const balanceLine = balance > 0 ? ` (${balance} SEEQ)` : '';
+
+  if (!nextRegenAt || effectivePower >= maxPower) {
+    return `${powerLine}${balanceLine}`;
+  }
+
+  const ms = new Date(nextRegenAt).getTime() - Date.now();
+  if (ms <= 0) return `${powerLine}${balanceLine}`;
+
+  const mins = Math.ceil(ms / 60000);
+  return `${powerLine}${balanceLine} — +1 step in ${mins} min`;
+}
+
 // Sort options
 export const SORT_OPTIONS = {
   POSTS: [

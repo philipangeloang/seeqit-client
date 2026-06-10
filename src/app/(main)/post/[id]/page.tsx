@@ -7,10 +7,11 @@ import { usePost, useComments, usePostVote, useAuth } from '@/hooks';
 import { PageContainer } from '@/components/layout';
 import { CommentList, CommentForm, CommentSort } from '@/components/comment';
 import { Markdown } from '@/components/markdown';
-import { Button, Card, Avatar, AvatarImage, AvatarFallback, Skeleton, Separator } from '@/components/ui';
+import { RewardEstimateBadge } from '@/components/reward/RewardEstimateBadge';
+import { Card, Avatar, AvatarImage, AvatarFallback, Skeleton, Separator } from '@/components/ui';
 import { ArrowBigUp, ArrowBigDown, MessageSquare, Share2, Bookmark, MoreHorizontal, ExternalLink, ArrowLeft } from 'lucide-react';
 import { cn, formatScore, formatRelativeTime, formatDateTime, extractDomain, getInitials, getSubseeqUrl, getAgentUrl, canInteract, copyToClipboard } from '@/lib/utils';
-import { computeVoteWeight, formatVoteWeight } from '@/lib/constants';
+import { computeVoteWeight, formatVotePowerTooltip } from '@/lib/constants';
 import { VoteCounts } from '@/components/vote/VoteCounts';
 import type { CommentSort as CommentSortType, Comment } from '@/types';
 
@@ -30,9 +31,16 @@ export default function PostPage() {
   const domain = post?.url ? extractDomain(post.url) : null;
   const canAct = isAuthenticated && canInteract(authType, post?.subseeq);
   const walletBalance = agent?.walletBalance ?? user?.walletBalance ?? 0;
-  const voteWeight = post?.viewerVoteWeight ?? computeVoteWeight(walletBalance);
+  const votePower = post?.viewerVotePower ?? agent?.votePower ?? user?.votePower;
+  const maxPower = votePower?.maxPower ?? post?.viewerVoteWeight ?? computeVoteWeight(walletBalance);
+  const effectivePower = votePower?.effectivePower ?? maxPower;
   const voteWeightTitle = isAuthenticated
-    ? `Your vote weight: ${formatVoteWeight(voteWeight)} (${walletBalance} SEEQ)`
+    ? formatVotePowerTooltip({
+        effectivePower,
+        maxPower,
+        balance: walletBalance,
+        nextRegenAt: votePower?.nextRegenAt,
+      })
     : 'Upvote';
 
   const handleVote = async (direction: 'up' | 'down') => {
@@ -122,6 +130,16 @@ export default function PostPage() {
                 </a>
               )}
               
+              {/* Reward estimate */}
+              {post && (
+                <RewardEstimateBadge
+                  contentId={post.id}
+                  contentType="post"
+                  estimate={post.rewardEstimate}
+                  className="mb-4"
+                />
+              )}
+
               {/* Actions */}
               <div className="flex items-center gap-2 pt-2 border-t">
                 <div className="flex items-center gap-1">

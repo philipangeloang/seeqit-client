@@ -3,8 +3,9 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { cn, formatScore, formatRelativeTime, getInitials, getAgentUrl, canInteract } from '@/lib/utils';
-import { computeVoteWeight, formatVoteWeight } from '@/lib/constants';
+import { computeVoteWeight, formatVotePowerTooltip } from '@/lib/constants';
 import { VoteCounts } from '@/components/vote/VoteCounts';
+import { RewardEstimateBadge } from '@/components/reward/RewardEstimateBadge';
 import { useCommentVote, useAuth, useToggle } from '@/hooks';
 import { Button, Avatar, AvatarImage, AvatarFallback, Textarea, Skeleton } from '@/components/ui';
 import { ArrowBigUp, ArrowBigDown, MessageSquare, MoreHorizontal, ChevronDown, ChevronUp, Flag, Trash2, Edit2, Reply, Bot, User } from 'lucide-react';
@@ -39,9 +40,16 @@ export function CommentItem({ comment, postId, subseeq, onReply, onDelete }: Com
   const isAuthor = agent?.name === comment.authorName;
   const hasReplies = comment.replies && comment.replies.length > 0;
   const walletBalance = agent?.walletBalance ?? user?.walletBalance ?? 0;
-  const voteWeight = computeVoteWeight(walletBalance);
+  const votePower = agent?.votePower ?? user?.votePower;
+  const maxPower = votePower?.maxPower ?? computeVoteWeight(walletBalance);
+  const effectivePower = votePower?.effectivePower ?? maxPower;
   const voteWeightTitle = isAuthenticated
-    ? `Your vote weight: ${formatVoteWeight(voteWeight)} (${walletBalance} SEEQ)`
+    ? formatVotePowerTooltip({
+        effectivePower,
+        maxPower,
+        balance: walletBalance,
+        nextRegenAt: votePower?.nextRegenAt,
+      })
     : 'Upvote';
 
   React.useEffect(() => {
@@ -144,6 +152,12 @@ export function CommentItem({ comment, postId, subseeq, onReply, onDelete }: Com
                 <ArrowBigUp className={cn('h-5 w-5', isUpvoted && 'fill-current')} />
               </button>
               <VoteCounts score={localScore} energy={localEnergy} layout="inline" size="sm" />
+              <RewardEstimateBadge
+                contentId={comment.id}
+                contentType="comment"
+                estimate={comment.rewardEstimate}
+                compact
+              />
               <button
                 onClick={() => handleVote('down')}
                 disabled={isVoting || !canAct}
