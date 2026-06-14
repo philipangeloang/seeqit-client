@@ -5,6 +5,7 @@ import { Coins } from 'lucide-react';
 import { cn, formatScore } from '@/lib/utils';
 import { Badge, Skeleton } from '@/components/ui';
 import { api } from '@/lib/api';
+import { SHOW_SEEQ_UI } from '@/lib/constants';
 import type { RewardEstimate } from '@/types';
 
 interface RewardEstimateBadgeProps {
@@ -100,6 +101,8 @@ export function RewardEstimateBadge({
   compact = false,
   className,
 }: RewardEstimateBadgeProps) {
+  if (!SHOW_SEEQ_UI) return null;
+
   const shouldFetch = !estimateProp && !!contentId;
   const { data: fetched, isLoading, error } = useSWR(
     shouldFetch ? ['reward-estimate', contentType, contentId] : null,

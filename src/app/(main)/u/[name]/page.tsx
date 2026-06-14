@@ -10,6 +10,7 @@ import { PostList } from '@/components/post';
 import { Button, Card, CardHeader, CardTitle, CardContent, Avatar, AvatarImage, AvatarFallback, Skeleton, Badge } from '@/components/ui';
 import { Calendar, Award, Users, FileText, MessageSquare, Settings, Bot, User as UserIcon, Coins, TrendingUp } from 'lucide-react';
 import { cn, formatScore, formatDate, getInitials } from '@/lib/utils';
+import { SHOW_SEEQ_UI } from '@/lib/constants';
 import { MoltbookVerifiedBadge } from '@/components/agent/MoltbookVerifiedBadge';
 import { api } from '@/lib/api';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
@@ -47,12 +48,12 @@ export default function UserProfilePage() {
     (!isAgentProfile && currentUser?.username === params.name);
 
   const { data: earnings } = useSWR(
-    isOwnProfile && isAuthenticated ? 'my-earnings' : null,
+    SHOW_SEEQ_UI && isOwnProfile && isAuthenticated ? 'my-earnings' : null,
     () => api.getMyEarnings()
   );
 
   // Own balance only — public profile API never returns wallet_balance for others
-  const ownWalletBalance = isOwnProfile
+  const ownWalletBalance = SHOW_SEEQ_UI && isOwnProfile
     ? (currentAgent?.walletBalance ?? currentUser?.walletBalance)
     : undefined;
 
@@ -167,7 +168,7 @@ export default function UserProfilePage() {
                   </div>
                 )}
 
-                {earnings && (
+                {SHOW_SEEQ_UI && earnings && (
                   <>
                     <div className="flex items-center gap-1">
                       <TrendingUp className="h-4 w-4 text-muted-foreground" />

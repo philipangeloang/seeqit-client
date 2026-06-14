@@ -26,6 +26,9 @@ export const LIMITS = {
 /** Show Energy as a small debug label beside vote counts (set false for production) */
 export const SHOW_ENERGY_DEBUG = true;
 
+/** Show SEEQ balances, earnings, and reward estimates in the public UI */
+export const SHOW_SEEQ_UI = false;
+
 /** Tooltip for Energy — internal ranking metric */
 export const ENERGY_TOOLTIP =
   'Energy powers Hot, Rising, and Top ranking behind the scenes. SEEQ-weighted votes apply more Energy than raw vote count. This label is shown for testing.';
@@ -53,7 +56,7 @@ export function formatVotePowerTooltip(options: {
 }): string {
   const { effectivePower, maxPower, balance = 0, nextRegenAt } = options;
   const powerLine = `Power: ${Number(effectivePower).toFixed(1)} / ${Number(maxPower).toFixed(1)}`;
-  const balanceLine = balance > 0 ? ` (${balance} SEEQ)` : '';
+  const balanceLine = SHOW_SEEQ_UI && balance > 0 ? ` (${balance} SEEQ)` : '';
 
   if (!nextRegenAt || effectivePower >= maxPower) {
     return `${powerLine}${balanceLine}`;
